@@ -1,13 +1,11 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '../supabaseClient'
-import SettingsScreen from './SettingsScreen'
 
-export default function Dashboard({ user, currency, onCurrencyChange, onSelectTrip }) {
+export default function Dashboard({ user, currency, onCurrencyChange, onSelectTrip, onOpenSettings }) {
   const [trips, setTrips] = useState([])
   const [newName, setNewName] = useState('')
   const [view, setView] = useState('active')
   const [createError, setCreateError] = useState('')
-  const [showSettings, setShowSettings] = useState(false)
   const [showCreate, setShowCreate] = useState(false)
   const [loading, setLoading] = useState(true)
   const [profile, setProfile] = useState(null)
@@ -79,7 +77,7 @@ export default function Dashboard({ user, currency, onCurrencyChange, onSelectTr
               TripSplit
             </span>
           </div>
-          <button onClick={() => setShowSettings(true)}
+          <button type="button" onClick={() => onOpenSettings?.()}
             className="flex items-center gap-2.5 bg-slate-50 hover:bg-slate-100 border border-slate-200 px-3 py-1.5 rounded-2xl transition">
             <div className="w-7 h-7 rounded-full overflow-hidden bg-gradient-to-br from-indigo-400 to-violet-500 flex items-center justify-center text-white text-xs font-bold shrink-0">
               {profile?.avatar_url
@@ -287,14 +285,6 @@ export default function Dashboard({ user, currency, onCurrencyChange, onSelectTr
         </button>
       )}
 
-      {showSettings && (
-        <SettingsScreen
-          user={user}
-          currency={currency}
-          onCurrencyChange={onCurrencyChange}
-          onClose={() => { setShowSettings(false); fetchProfile() }}
-        />
-      )}
     </div>
   )
 }
