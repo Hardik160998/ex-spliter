@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '../supabaseClient'
 import ExpenseForm from './ExpenseForm'
-import InviteModal from './InviteModal'
+import AddMemberModal from './AddMemberModal'
 import { useCurrencyRates } from '../hooks/useCurrencyRates'
 
 function getCategoryEmoji(cat = '') {
@@ -173,7 +173,7 @@ export default function TripView({ tripId, user, currency, onBack }) {
   const [expenses, setExpenses] = useState([])
   const [members, setMembers] = useState([])
   const [showForm, setShowForm] = useState(false)
-  const [showInvite, setShowInvite] = useState(false)
+  const [showAddMember, setShowAddMember] = useState(false)
   const [isOwner, setIsOwner] = useState(false)
   const [loading, setLoading] = useState(true)
   const [activeTab, setActiveTab] = useState('expenses')
@@ -302,9 +302,9 @@ export default function TripView({ tripId, user, currency, onBack }) {
           </button>
           <div className="flex gap-2">
             {isOwner && isActive && (
-              <button onClick={() => setShowInvite(true)}
+              <button onClick={() => setShowAddMember(true)}
                 className="text-xs px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-600 font-semibold transition">
-                📧 Invite
+                + Member
               </button>
             )}
             {isOwner && (
@@ -531,8 +531,12 @@ export default function TripView({ tripId, user, currency, onBack }) {
         <ExpenseForm tripId={tripId} userId={user.id} members={members} currency={currency}
           onClose={() => setShowForm(false)} onSaved={() => { setShowForm(false); fetchAll() }} />
       )}
-      {showInvite && (
-        <InviteModal tripId={tripId} onClose={() => setShowInvite(false)} />
+      {showAddMember && (
+        <AddMemberModal
+          tripId={tripId}
+          onClose={() => setShowAddMember(false)}
+          onAdded={() => fetchAll()}
+        />
       )}
     </div>
   )

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { supabase } from '../supabaseClient'
 
 export default function Auth() {
@@ -8,11 +8,6 @@ export default function Auth() {
   const [isSignUp, setIsSignUp] = useState(false)
   const [msg, setMsg] = useState('')
   const [msgType, setMsgType] = useState('info')
-  const [hasInvite, setHasInvite] = useState(false)
-
-  useEffect(() => {
-    try { setHasInvite(!!localStorage.getItem('invite_token')) } catch {}
-  }, [])
 
   const handle = async (e) => {
     e.preventDefault()
@@ -35,8 +30,20 @@ export default function Auth() {
       setMsgType('info')
       setIsSignUp(false)
     } else {
-      const { error } = await supabase.auth.signInWithPassword({ email, password })
-      if (error) { setMsg(error.message); setMsgType('error') }
+      const { data, error } = await supabase.auth.signInWithPassword({ email, password })
+      if (error) { setMsg(error.message); setMsgType('error'); return }
+
+      // Ensure profile exists for existing users
+      if (data?.user) {
+        const { data: profile } = await supabase.from('profiles').select('id').eq('id', data.user.id).maybeSingle()
+        if (!profile) {
+          await supabase.from('profiles').upsert({
+            id: data.user.id,
+            display_name: email.split('@')[0],
+            updated_at: new Date().toISOString(),
+          })
+        }
+      }
     }
   }
 
@@ -52,13 +59,6 @@ export default function Auth() {
           </h1>
           <p className="text-slate-500 text-sm mt-1">Split expenses with your travel crew</p>
         </div>
-
-        {hasInvite && (
-          <div className="bg-indigo-600 text-white rounded-2xl px-5 py-4 mb-5 text-center shadow-lg shadow-indigo-200">
-            <p className="font-semibold">🎉 You've been invited to a trip!</p>
-            <p className="text-indigo-200 text-xs mt-1">Sign in or create an account to join.</p>
-          </div>
-        )}
 
         <div className="bg-white rounded-3xl shadow-xl shadow-slate-200 border border-slate-100 p-8">
           <h2 className="text-xl font-bold text-slate-800 mb-6">
@@ -84,7 +84,7 @@ export default function Auth() {
                 value={password} onChange={e => setPassword(e.target.value)} required minLength={6} />
             </div>
             <button className="w-full bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 text-white font-bold py-3 rounded-xl transition shadow-lg shadow-indigo-200 mt-2">
-              {isSignUp ? (hasInvite ? 'Sign Up & Join Trip' : 'Create Account') : (hasInvite ? 'Sign In & Join Trip' : 'Sign In')}
+              {isSignUp ? 'Create Account' : 'Sign In'}
             </button>
           </form>
 

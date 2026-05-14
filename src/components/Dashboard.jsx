@@ -178,14 +178,36 @@ export default function Dashboard({ user, currency, onCurrencyChange, onSelectTr
           ))}
         </div>
 
-        {/* ── Trip List ── */}
+{/* ── Trip List ── */}
         <div className="mt-5 space-y-4">
           {loading ? (
-            <div className="space-y-3">
+            <>
               {[1, 2].map(i => (
-                <div key={i} className="bg-white rounded-3xl h-32 animate-pulse border border-slate-100" />
+                <div key={i} className="w-full text-left bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden">
+                  {/* Colored top strip */}
+                  <div className="h-1.5 w-full bg-slate-200 animate-pulse" />
+                  <div className="p-5">
+                    <div className="flex justify-between items-start">
+                      <div className="flex items-center gap-3">
+                        <div className="w-11 h-11 rounded-2xl bg-slate-200 animate-pulse" />
+                        <div>
+                          <div className="w-40 h-4 bg-slate-200 rounded animate-pulse mb-1.5" />
+                          <div className="w-24 h-3 bg-slate-200 rounded animate-pulse" />
+                        </div>
+                      </div>
+                      <div className="w-16 h-5 bg-slate-200 rounded-full animate-pulse" />
+                    </div>
+                    <div className="flex items-center justify-between mt-4 pt-3 border-t border-slate-50">
+                      <div className="flex items-center gap-1.5">
+                        <div className="w-12 h-4 bg-slate-200 rounded animate-pulse" />
+                        <div className="w-10 h-4 bg-slate-200 rounded animate-pulse" />
+                      </div>
+                      <div className="w-12 h-3 bg-slate-200 rounded animate-pulse" />
+                    </div>
+                  </div>
+                </div>
               ))}
-            </div>
+            </>
           ) : filtered.length === 0 ? (
             <div className="text-center py-20">
               <div className="w-20 h-20 bg-indigo-50 rounded-3xl flex items-center justify-center text-4xl mx-auto mb-4">
