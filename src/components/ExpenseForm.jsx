@@ -1,8 +1,23 @@
 import { useState } from 'react'
 import { supabase } from '../supabaseClient'
 
+const CATEGORIES = [
+  'Food & Drinks',
+  'Accommodation',
+  'Transport',
+  'Flight',
+  'Fuel',
+  'Shopping',
+  'Activities',
+  'Entertainment',
+  'Medical',
+  'Visa & Documents',
+  'Communication',
+  'Other',
+]
+
 export default function ExpenseForm({ tripId, userId, members, currency, onClose, onSaved }) {
-  const [form, setForm] = useState({ description: '', amount: '', category: '' })
+  const [form, setForm] = useState({ description: '', amount: '', category: 'Food & Drinks' })
   const [error, setError] = useState('')
 
   // Auto-resolve current user's member record
@@ -10,8 +25,8 @@ export default function ExpenseForm({ tripId, userId, members, currency, onClose
 
   const submit = async (e) => {
     e.preventDefault()
-    if (!form.description || !form.amount) {
-      setError('Description and amount are required.')
+    if (!form.amount || !form.description) {
+      setError('Amount and description are required.')
       return
     }
     if (!myMember) {
@@ -23,7 +38,7 @@ export default function ExpenseForm({ tripId, userId, members, currency, onClose
       member_id: myMember.id,
       description: form.description,
       amount: parseFloat(form.amount),
-      category: form.category || 'General',
+      category: form.category,
     })
     if (err) setError(err.message)
     else onSaved()
@@ -39,15 +54,17 @@ export default function ExpenseForm({ tripId, userId, members, currency, onClose
           Adding as <span className="text-indigo-600 font-medium">{myMember?.display_name || 'you'}</span>
         </p>
         <form onSubmit={submit} className="space-y-3">
-          <input className={inputCls} placeholder="Description" value={form.description}
-            onChange={e => setForm(f => ({ ...f, description: e.target.value }))} />
           <div className="flex gap-2 items-center">
             <span className="text-slate-500 font-medium text-sm shrink-0">{currency}</span>
             <input className={inputCls} placeholder="Amount" type="number" min="0" step="0.01" value={form.amount}
               onChange={e => setForm(f => ({ ...f, amount: e.target.value }))} />
           </div>
-          <input className={inputCls} placeholder="Category (e.g. Food, Hotel, Fuel...)" value={form.category}
-            onChange={e => setForm(f => ({ ...f, category: e.target.value }))} />
+          <input className={inputCls} placeholder="Description" value={form.description}
+            onChange={e => setForm(f => ({ ...f, description: e.target.value }))} />
+          <select className={inputCls} value={form.category}
+            onChange={e => setForm(f => ({ ...f, category: e.target.value }))}>
+            {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
+          </select>
           {error && <p className="text-red-500 text-sm">{error}</p>}
           <div className="flex gap-2 pt-1">
             <button type="button" onClick={onClose}
