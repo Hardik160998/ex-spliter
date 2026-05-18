@@ -9,6 +9,8 @@ export default function Dashboard({ user, currency, onCurrencyChange, onSelectTr
   const [showCreate, setShowCreate] = useState(false)
   const [loading, setLoading] = useState(true)
   const [profile, setProfile] = useState(null)
+  const [manualMembers, setManualMembers] = useState([])
+  const [newMemberName, setNewMemberName] = useState('')
 
   const fetchTrips = async () => {
     const { data, error } = await supabase
@@ -45,9 +47,34 @@ export default function Dashboard({ user, currency, onCurrencyChange, onSelectTr
       trip_id: trip.id, user_id: user.id, role: 'owner', display_name: displayName,
     })
     if (memberErr) { setCreateError(memberErr.message); return }
+
+    // Add manual members
+    for (const name of manualMembers) {
+      if (!name.trim()) continue
+      await supabase.from('trip_members').insert({
+        trip_id: trip.id,
+        user_id: null,
+        role: 'contributor',
+        display_name: name.trim(),
+        source: 'manual',
+      })
+    }
+
     setNewName('')
+    setManualMembers([])
+    setNewMemberName('')
     setShowCreate(false)
     fetchTrips()
+  }
+
+  const addManualMember = () => {
+    if (!newMemberName.trim()) return
+    setManualMembers([...manualMembers, newMemberName.trim()])
+    setNewMemberName('')
+  }
+
+  const removeManualMember = (name) => {
+    setManualMembers(manualMembers.filter(m => m !== name))
   }
 
   const active = trips.filter(t => t.status === 'active')
@@ -147,9 +174,40 @@ export default function Dashboard({ user, currency, onCurrencyChange, onSelectTr
                 placeholder="Trip name (e.g. Goa 2025, Ladakh Road Trip...)"
                 value={newName} onChange={e => setNewName(e.target.value)}
               />
+
+              {/* Manual Members */}
+              <div className="border-t border-slate-100 pt-3">
+                <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Members (no account needed)</p>
+                
+                {manualMembers.length > 0 && (
+                  <div className="flex flex-wrap gap-2 mb-2">
+                    {manualMembers.map((name, i) => (
+                      <span key={i} className="inline-flex items-center gap-1 bg-slate-100 text-slate-700 text-xs px-2.5 py-1.5 rounded-full font-medium">
+                        {name}
+                        <button type="button" onClick={() => removeManualMember(name)} className="text-slate-400 hover:text-red-500 ml-1">×</button>
+                      </span>
+                    ))}
+                  </div>
+                )}
+
+                <div className="flex gap-2">
+                  <input
+                    className="flex-1 bg-slate-50 border border-slate-200 text-slate-800 rounded-xl px-3 py-2 outline-none focus:ring-2 focus:ring-indigo-400 text-sm"
+                    placeholder="Add member name (e.g. Hardik)"
+                    value={newMemberName}
+                    onChange={e => setNewMemberName(e.target.value)}
+                    onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); addManualMember() } }}
+                  />
+                  <button type="button" onClick={addManualMember}
+                    className="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-xl text-sm font-semibold transition">
+                    + Add
+                  </button>
+                </div>
+              </div>
+
               {createError && <p className="text-red-500 text-xs pl-1">{createError}</p>}
               <div className="flex gap-2">
-                <button type="button" onClick={() => { setShowCreate(false); setNewName(''); setCreateError('') }}
+                <button type="button" onClick={() => { setShowCreate(false); setNewName(''); setCreateError(''); setManualMembers([]); setNewMemberName('') }}
                   className="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-600 py-2.5 rounded-2xl text-sm font-semibold transition">
                   Cancel
                 </button>

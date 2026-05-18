@@ -416,6 +416,7 @@ export default function TripView({ tripId, user, currency, onBack, onOpenSetting
             ) : expenses.map(exp => {
               const payer = members.find(m => m.id === exp.member_id)
               const isMe = payer?.user_id === user.id
+              const isManualPayer = !payer?.user_id
               const catColor = getCategoryColor(exp.category)
               return (
                 <div key={exp.id} className="bg-white rounded-2xl px-5 py-4 flex items-center justify-between border border-slate-100 shadow-sm hover:shadow-md transition group">
@@ -425,7 +426,7 @@ export default function TripView({ tripId, user, currency, onBack, onOpenSetting
                     </div>
                     <div>
                       <p className="font-bold text-slate-800 text-sm">{exp.description}</p>
-                      <div className="flex items-center gap-2 mt-1">
+                      <div className="flex items-center gap-2 mt-1 flex-wrap">
                         <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${catColor}`}>
                           {exp.category}
                         </span>
@@ -433,6 +434,9 @@ export default function TripView({ tripId, user, currency, onBack, onOpenSetting
                         <span className={`text-xs font-semibold ${isMe ? 'text-indigo-600' : 'text-slate-500'}`}>
                           {isMe ? 'You' : payer?.display_name || 'Unknown'}
                         </span>
+                        {isManualPayer && (
+                          <span className="text-xs bg-slate-100 text-slate-500 px-2 py-0.5 rounded-full font-medium">Manual</span>
+                        )}
                         <span className="text-xs text-slate-400">·</span>
                         <span className="text-xs text-slate-400">
                           {new Date(exp.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })}
@@ -493,6 +497,7 @@ export default function TripView({ tripId, user, currency, onBack, onOpenSetting
             {members.map((m, idx) => {
               const memberTotal = expenses.filter(e => e.member_id === m.id).reduce((s, e) => s + Number(e.amount), 0)
               const isMe = m.user_id === user.id
+              const isManual = !m.user_id
               const colors = ['from-indigo-400 to-violet-500', 'from-rose-400 to-pink-500', 'from-amber-400 to-orange-500', 'from-emerald-400 to-teal-500']
               const pct = total > 0 ? Math.round((memberTotal / total) * 100) : 0
               return (
@@ -503,9 +508,10 @@ export default function TripView({ tripId, user, currency, onBack, onOpenSetting
                         {(m.display_name || '?')[0].toUpperCase()}
                       </div>
                       <div>
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-2 flex-wrap">
                           <p className="font-bold text-slate-800 text-sm">{isMe ? 'You' : m.display_name}</p>
                           {isMe && <span className="text-xs bg-indigo-100 text-indigo-600 px-2 py-0.5 rounded-full font-semibold">You</span>}
+                          {isManual && <span className="text-xs bg-slate-100 text-slate-500 px-2 py-0.5 rounded-full font-medium">Manual</span>}
                         </div>
                         <p className="text-xs text-slate-400 capitalize mt-0.5">{m.role}</p>
                       </div>

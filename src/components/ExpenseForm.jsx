@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { supabase } from '../supabaseClient'
 
 const CATEGORIES = [
@@ -17,11 +17,17 @@ const CATEGORIES = [
 ]
 
 export default function ExpenseForm({ tripId, userId, members, currency, onClose, onSaved }) {
-  const [form, setForm] = useState({ description: '', amount: '', category: 'Food & Drinks' })
+  const [form, setForm] = useState({ description: '', amount: '', category: 'Food & Drinks', paid_by_member_id: '' })
   const [error, setError] = useState('')
 
   // Auto-resolve current user's member record
   const myMember = members.find(m => m.user_id === userId)
+
+  useEffect(() => {
+    if (myMember && !form.paid_by_member_id) {
+      setForm(f => ({ ...f, paid_by_member_id: myMember.id }))
+    }
+  }, [myMember])
 
   const submit = async (e) => {
     e.preventDefault()
@@ -29,13 +35,13 @@ export default function ExpenseForm({ tripId, userId, members, currency, onClose
       setError('Amount and description are required.')
       return
     }
-    if (!myMember) {
-      setError('You are not a member of this trip.')
+    if (!form.paid_by_member_id) {
+      setError('Please select who paid.')
       return
     }
     const { error: err } = await supabase.from('expenses').insert({
       trip_id: tripId,
-      member_id: myMember.id,
+      member_id: form.paid_by_member_id,
       description: form.description,
       amount: parseFloat(form.amount),
       category: form.category,
@@ -65,6 +71,29 @@ export default function ExpenseForm({ tripId, userId, members, currency, onClose
             onChange={e => setForm(f => ({ ...f, category: e.target.value }))}>
             {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
           </select>
+
+          {/* Paid By dropdown - shows all members including manual */}
+          <div>
+            <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1 block">Paid By</label>
+            <select 
+              className={inputCls}
+              value={form.paid_by_member_id}
+              onChange={e => setForm(f => ({ ...f, paid_by_member_id: e.target.value }))}
+              required
+            >
+              <option value="">Select who paid…</option>
+              {members.map(m => {
+                const isMe = m.user_id === userId
+                const isManual = !m.user_id
+                return (
+                  <option key={m.id} value={m.id}>
+                    {isMe ? 'You' : m.display_name}{isManual ? ' (manual)' : ''}
+                  </option>
+                )
+              })}
+            </select>
+          </div>
+
           {error && <p className="text-red-500 text-sm">{error}</p>}
           <div className="flex gap-2 pt-1">
             <button type="button" onClick={onClose}
