@@ -73,24 +73,24 @@ function SettleTab({ settlements, members, expenses, user, fmt, total }) {
   const perPerson = members.length ? total / members.length : 0
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-5">
       {/* Stats */}
-      <div className="grid grid-cols-3 gap-3">
+      <div className="grid grid-cols-3 gap-2 sm:gap-3">
         {[
           { label: 'Total Spent', value: fmt(total), color: 'text-slate-800' },
           { label: 'Members', value: members.length, color: 'text-indigo-600' },
           { label: 'Per Person', value: fmt(perPerson), color: 'text-violet-600' },
         ].map(s => (
-          <div key={s.label} className="bg-white rounded-2xl p-4 border border-slate-100 shadow-sm text-center">
-            <p className={`text-lg font-black ${s.color}`}>{s.value}</p>
-            <p className="text-xs text-slate-400 mt-0.5">{s.label}</p>
+          <div key={s.label} className="bg-white rounded-[1rem] sm:rounded-[1.25rem] p-2.5 sm:p-4 border border-slate-100 shadow-md shadow-slate-100/50 text-center flex flex-col justify-center min-w-0">
+            <p className={`text-[0.9rem] sm:text-[1.1rem] leading-tight font-black tabular-nums truncate ${s.color}`}>{s.value}</p>
+            <p className="text-[0.6rem] sm:text-[0.65rem] font-bold text-slate-400 mt-1 uppercase tracking-wider truncate">{s.label}</p>
           </div>
         ))}
       </div>
 
       {/* Who paid */}
-      <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
-        <div className="px-5 py-3 border-b border-slate-50">
+      <div className="bg-white rounded-[1.25rem] border border-slate-100 shadow-md shadow-slate-100/50 overflow-hidden">
+        <div className="px-5 py-3.5 border-b border-slate-50 bg-slate-50/50">
           <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">Who Paid What</p>
         </div>
         {members.map((m, idx) => {
@@ -100,25 +100,25 @@ function SettleTab({ settlements, members, expenses, user, fmt, total }) {
           const pct = total > 0 ? (paid / total) * 100 : 0
           const colors = ['from-indigo-400 to-violet-500', 'from-rose-400 to-pink-500', 'from-amber-400 to-orange-500', 'from-emerald-400 to-teal-500']
           return (
-            <div key={m.id} className="px-5 py-4 border-b border-slate-50 last:border-0">
-              <div className="flex justify-between items-center mb-2">
-                <div className="flex items-center gap-2.5">
-                  <div className={`w-8 h-8 rounded-full bg-gradient-to-br ${colors[idx % colors.length]} flex items-center justify-center text-white font-bold text-xs`}>
+            <div key={m.id} className="px-5 py-4 border-b border-slate-50 last:border-0 hover:bg-slate-50/50 transition-colors">
+              <div className="flex justify-between items-center mb-3">
+                <div className="flex items-center gap-3 min-w-0 pr-3">
+                  <div className={`w-9 h-9 shrink-0 rounded-full bg-gradient-to-br ${colors[idx % colors.length]} flex items-center justify-center text-white font-bold text-sm shadow-sm`}>
                     {(m.display_name || '?')[0].toUpperCase()}
                   </div>
-                  <span className="font-semibold text-slate-700 text-sm">
+                  <span className="font-bold text-slate-700 text-sm truncate">
                     {isYou ? 'You' : m.display_name}
                   </span>
                 </div>
-                <div className="text-right">
-                  <p className="font-bold text-slate-800 text-sm">{fmt(paid)}</p>
-                  <p className={`text-xs font-semibold ${diff >= 0 ? 'text-green-600' : 'text-red-500'}`}>
+                <div className="text-right shrink-0">
+                  <p className="font-bold text-slate-800 text-sm tabular-nums">{fmt(paid)}</p>
+                  <p className={`text-[0.7rem] font-bold mt-0.5 tabular-nums ${diff >= 0 ? 'text-emerald-600' : 'text-rose-500'}`}>
                     {diff >= 0 ? `+${fmt(diff)}` : `-${fmt(Math.abs(diff))}`}
                   </p>
                 </div>
               </div>
-              <div className="w-full bg-slate-100 rounded-full h-1.5">
-                <div className={`bg-gradient-to-r ${colors[idx % colors.length]} h-1.5 rounded-full transition-all`}
+              <div className="w-full bg-slate-100 rounded-full h-1.5 overflow-hidden">
+                <div className={`bg-gradient-to-r ${colors[idx % colors.length]} h-full rounded-full transition-all duration-700 ease-out`}
                   style={{ width: `${Math.min(pct, 100)}%` }} />
               </div>
             </div>
@@ -127,37 +127,37 @@ function SettleTab({ settlements, members, expenses, user, fmt, total }) {
       </div>
 
       {/* Transactions */}
-      <div>
-        <p className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3">Transactions to Settle</p>
+      <div className="pt-2">
+        <p className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3 px-1">Transactions to Settle</p>
         {settlements.length === 0 ? (
-          <div className="bg-white rounded-2xl border border-slate-100 shadow-sm text-center py-10">
-            <div className="text-4xl mb-2">🎉</div>
-            <p className="text-slate-700 font-bold">All settled up!</p>
-            <p className="text-slate-400 text-sm mt-1">No payments needed.</p>
+          <div className="bg-white rounded-[1.25rem] border border-slate-100 shadow-sm text-center py-10">
+            <div className="text-4xl mb-3 drop-shadow-sm">🎉</div>
+            <p className="text-slate-700 font-black text-lg">All settled up!</p>
+            <p className="text-slate-400 text-sm mt-1 font-medium">No payments needed.</p>
           </div>
         ) : settlements.map((s, i) => {
           const fromMe = isMe(s.from)
           const toMe = isMe(s.to)
           return (
-            <div key={i} className={`rounded-2xl px-5 py-4 mb-3 border flex items-center justify-between shadow-sm ${
-              fromMe ? 'bg-red-50 border-red-100' : toMe ? 'bg-green-50 border-green-100' : 'bg-white border-slate-100'
+            <div key={i} className={`rounded-[1.25rem] px-5 py-4 mb-3 border flex items-center justify-between shadow-sm transition-transform hover:-translate-y-0.5 ${
+              fromMe ? 'bg-rose-50/50 border-rose-100' : toMe ? 'bg-emerald-50/50 border-emerald-100' : 'bg-white border-slate-100'
             }`}>
-              <div className="flex items-center gap-3">
-                <div className={`w-9 h-9 rounded-xl flex items-center justify-center text-white font-bold text-sm ${fromMe ? 'bg-red-400' : 'bg-slate-300'}`}>
+              <div className="flex items-center gap-3 min-w-0 pr-3">
+                <div className={`w-10 h-10 shrink-0 rounded-2xl flex items-center justify-center text-white font-bold text-sm shadow-sm ${fromMe ? 'bg-rose-400' : 'bg-slate-300'}`}>
                   {(members.find(m => m.id === s.from)?.display_name || '?')[0].toUpperCase()}
                 </div>
-                <div>
-                  <p className="font-bold text-slate-800 text-sm">
-                    <span className={fromMe ? 'text-red-600' : 'text-slate-700'}>{getName(s.from)}</span>
-                    <span className="text-slate-300 mx-2">→</span>
-                    <span className={toMe ? 'text-green-600' : 'text-slate-700'}>{getName(s.to)}</span>
+                <div className="truncate">
+                  <p className="font-bold text-slate-800 text-sm flex items-center gap-2 truncate">
+                    <span className={`truncate ${fromMe ? 'text-rose-600' : 'text-slate-700'}`}>{getName(s.from)}</span>
+                    <span className="text-slate-300 shrink-0">→</span>
+                    <span className={`truncate ${toMe ? 'text-emerald-600' : 'text-slate-700'}`}>{getName(s.to)}</span>
                   </p>
-                  <p className="text-xs text-slate-400 mt-0.5">
+                  <p className="text-xs font-semibold text-slate-400 mt-0.5">
                     {fromMe ? '💸 You need to pay' : toMe ? '💰 You will receive' : 'Transfer'}
                   </p>
                 </div>
               </div>
-              <span className={`font-black text-lg ${fromMe ? 'text-red-600' : toMe ? 'text-green-600' : 'text-slate-700'}`}>
+              <span className={`font-black text-lg shrink-0 tabular-nums tracking-tight ${fromMe ? 'text-rose-600' : toMe ? 'text-emerald-600' : 'text-slate-700'}`}>
                 {fmt(s.amount)}
               </span>
             </div>
@@ -291,13 +291,13 @@ export default function TripView({ tripId, user, currency, onBack, onOpenSetting
     <div className="min-h-screen bg-[#f5f6fa]">
 
       {/* ── Header ── */}
-      <header className="bg-white border-b border-slate-100 sticky top-0 z-20">
-        <div className="max-w-4xl mx-auto px-5 py-3 flex justify-between items-center">
-          <button onClick={onBack} className="flex items-center gap-2 text-slate-500 hover:text-indigo-600 transition font-semibold text-sm">
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+      <header className="bg-white/80 backdrop-blur-md border-b border-slate-100 sticky top-0 z-20">
+        <div className="max-w-4xl mx-auto px-4 py-3 flex justify-between items-center">
+          <button onClick={onBack} className="flex items-center gap-1.5 text-slate-500 hover:text-indigo-600 transition-colors font-semibold text-sm active:scale-95">
+            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
             </svg>
-            Back
+            <span className="hidden sm:inline">Back</span>
           </button>
           <div className="flex gap-2 items-center">
             {typeof onOpenSettings === 'function' && (
@@ -305,7 +305,7 @@ export default function TripView({ tripId, user, currency, onBack, onOpenSetting
                 type="button"
                 onClick={onOpenSettings}
                 title="Settings"
-                className="flex h-9 w-9 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-500 transition hover:border-indigo-200 hover:bg-indigo-50 hover:text-indigo-600"
+                className="flex h-9 w-9 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-500 transition hover:border-indigo-200 hover:bg-indigo-50 hover:text-indigo-600 active:scale-95"
               >
                 <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.324.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 011.37.49l1.296 2.247a1.125 1.125 0 01-.26 1.431l-1.003.827c-.293.24-.438.613-.431.992a6.759 6.759 0 010 .255c-.007.378.138.75.43.99l1.005.828c.424.35.534.954.26 1.43l-1.298 2.247a1.125 1.125 0 01-1.37.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.57 6.57 0 01-.22.128c-.331.183-.581.495-.644.869l-.213 1.28c-.09.543-.56.941-1.11.941h-2.594c-.55 0-1.019-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 01-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 01-1.369-.49l-1.297-2.247a1.125 1.125 0 01.26-1.431l1.004-.827c.292-.24.437-.613.43-.992a6.932 6.932 0 010-.255c.007-.378-.138-.75-.43-.99l-1.004-.828a1.125 1.125 0 01-.26-1.43l1.297-2.247a1.125 1.125 0 011.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.087.22-.128.332-.183.582-.495.644-.869l.214-1.281z" />
@@ -315,22 +315,22 @@ export default function TripView({ tripId, user, currency, onBack, onOpenSetting
             )}
             {isOwner && isActive && (
               <button onClick={() => setShowAddMember(true)}
-                className="text-xs px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-600 font-semibold transition">
+                className="flex h-9 min-w-[72px] items-center justify-center text-xs px-3 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold transition active:scale-95">
                 + Member
               </button>
             )}
             {isOwner && (
               <button onClick={toggleStatus}
-                className={`text-xs px-3 py-1.5 rounded-xl font-semibold transition border ${
+                className={`flex h-9 min-w-[72px] items-center justify-center text-xs px-3 rounded-xl font-bold transition active:scale-95 border ${
                   isActive ? 'bg-amber-50 border-amber-200 text-amber-700 hover:bg-amber-100'
                            : 'bg-green-50 border-green-200 text-green-700 hover:bg-green-100'
                 }`}>
-                {isActive ? '✓ Mark Done' : '↺ Reopen'}
+                {isActive ? '✓ Done' : '↺ Reopen'}
               </button>
             )}
             {isActive && (
               <button onClick={() => setShowForm(true)}
-                className="text-xs px-4 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold transition shadow-sm shadow-indigo-200">
+                className="flex h-9 min-w-[72px] items-center justify-center text-xs px-4 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold transition shadow-[0_4px_14px_0_rgb(79,70,229,0.39)] active:scale-95">
                 + Add
               </button>
             )}
@@ -339,61 +339,65 @@ export default function TripView({ tripId, user, currency, onBack, onOpenSetting
       </header>
 
       {/* ── Hero Banner ── */}
-      <div className={`relative overflow-hidden ${isActive ? 'bg-gradient-to-br from-indigo-600 via-violet-600 to-purple-700' : 'bg-gradient-to-br from-slate-600 to-slate-700'}`}>
-        <div className="absolute -top-8 -right-8 w-40 h-40 bg-white/10 rounded-full" />
-        <div className="absolute -bottom-10 -left-6 w-48 h-48 bg-white/5 rounded-full" />
+      <div className={`relative overflow-hidden ${isActive ? 'bg-gradient-to-br from-indigo-600 via-violet-700 to-purple-800' : 'bg-gradient-to-br from-slate-700 to-slate-800'}`}>
+        <div className="absolute -top-12 -right-12 w-48 h-48 bg-white/10 rounded-full blur-2xl" />
+        <div className="absolute -bottom-16 -left-10 w-64 h-64 bg-indigo-500/20 rounded-full blur-3xl" />
         <div className="max-w-4xl mx-auto px-6 py-8 relative z-10">
-          <div className="flex items-start justify-between mb-4">
+          <div className="flex items-start justify-between mb-6">
             <div>
-              <span className={`text-xs font-bold px-2.5 py-1 rounded-full ${isActive ? 'bg-white/20 text-white' : 'bg-white/10 text-slate-300'}`}>
-                {isActive ? '● Active' : '✓ Completed'}
+              <span className={`inline-flex items-center gap-1.5 text-xs font-bold px-3 py-1 rounded-full shadow-sm backdrop-blur-md ${isActive ? 'bg-white/20 text-white border border-white/20' : 'bg-white/10 text-slate-300 border border-white/10'}`}>
+                <span className={`w-1.5 h-1.5 rounded-full ${isActive ? 'bg-green-400 animate-pulse' : 'bg-slate-400'}`}></span>
+                {isActive ? 'Active' : 'Completed'}
               </span>
-              <h1 className="text-2xl font-black text-white mt-2">{trip?.name}</h1>
-              <p className="text-white/60 text-xs mt-1">
+              <h1 className="text-3xl font-black text-white mt-3 tracking-tight">{trip?.name}</h1>
+              <p className="text-indigo-100/80 text-sm mt-1 font-medium">
                 Created {new Date(trip?.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
               </p>
             </div>
             {baseCurrency !== currency && !ratesLoading && (
-              <span className="text-xs bg-white/20 text-white px-2.5 py-1 rounded-full">
+              <span className="text-xs bg-white/20 text-white px-2.5 py-1 rounded-full font-semibold backdrop-blur-md border border-white/10">
                 {baseCurrency} → {currency}
               </span>
             )}
           </div>
 
           {/* Total + quick stats */}
-          <div className="mt-4">
-            <p className="text-white/60 text-xs mb-1">Total Spent</p>
-            <p className="text-4xl font-black text-white tracking-tight">{fmt(total)}</p>
+          <div className="mt-2 flex flex-col">
+            <p className="text-indigo-100/80 text-sm font-medium mb-1 uppercase tracking-wider">Total Spent</p>
+            <p className="text-5xl font-black text-white tracking-tight drop-shadow-sm flex items-baseline gap-1">
+              {fmt(total).replace(/[0-9.,]/g, '')}
+              <span className="tabular-nums">{fmt(total).replace(/[^0-9.,]/g, '')}</span>
+            </p>
           </div>
 
-          <div className="grid grid-cols-3 gap-3 mt-5">
-            <div className="bg-white/15 backdrop-blur rounded-2xl px-3 py-3 text-center">
-              <p className="text-xl font-black text-white">{expenses.length}</p>
-              <p className="text-white/60 text-xs mt-0.5">Expenses</p>
+          <div className="grid grid-cols-3 gap-3 mt-6">
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl px-3 py-4 text-center border border-white/10 shadow-lg transition-transform hover:scale-[1.02]">
+              <p className="text-2xl font-black text-white tabular-nums leading-none">{expenses.length}</p>
+              <p className="text-indigo-100/80 text-xs font-semibold mt-1.5 uppercase tracking-wider">Expenses</p>
             </div>
-            <div className="bg-white/15 backdrop-blur rounded-2xl px-3 py-3 text-center">
-              <p className="text-xl font-black text-white">{members.length}</p>
-              <p className="text-white/60 text-xs mt-0.5">Members</p>
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl px-3 py-4 text-center border border-white/10 shadow-lg transition-transform hover:scale-[1.02]">
+              <p className="text-2xl font-black text-white tabular-nums leading-none">{members.length}</p>
+              <p className="text-indigo-100/80 text-xs font-semibold mt-1.5 uppercase tracking-wider">Members</p>
             </div>
-            <div className="bg-white/15 backdrop-blur rounded-2xl px-3 py-3 text-center">
-              <p className="text-xl font-black text-white">{Object.keys(byCategory).length}</p>
-              <p className="text-white/60 text-xs mt-0.5">Categories</p>
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl px-3 py-4 text-center border border-white/10 shadow-lg transition-transform hover:scale-[1.02]">
+              <p className="text-2xl font-black text-white tabular-nums leading-none">{Object.keys(byCategory).length}</p>
+              <p className="text-indigo-100/80 text-xs font-semibold mt-1.5 uppercase tracking-wider">Categories</p>
             </div>
           </div>
         </div>
       </div>
 
       {/* ── Tab Bar ── */}
-      <div className="bg-white border-b border-slate-100 sticky top-[57px] z-10">
-        <div className="max-w-4xl mx-auto px-5 flex overflow-x-auto">
+      <div className="bg-white border-b border-slate-100 sticky top-[61px] z-10 shadow-sm">
+        <div className="max-w-4xl mx-auto px-4 flex overflow-x-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
           {TABS.map(tab => (
             <button key={tab.id} onClick={() => setActiveTab(tab.id)}
-              className={`flex items-center gap-1.5 px-4 py-3.5 text-sm font-bold border-b-2 transition whitespace-nowrap ${
+              className={`flex-1 min-w-[90px] flex justify-center items-center gap-1.5 px-3 py-4 text-sm font-bold border-b-[3px] transition-all whitespace-nowrap outline-none ${
                 activeTab === tab.id
-                  ? 'border-indigo-600 text-indigo-600'
-                  : 'border-transparent text-slate-400 hover:text-slate-600'
+                  ? 'border-indigo-600 text-indigo-700'
+                  : 'border-transparent text-slate-400 hover:text-slate-600 hover:bg-slate-50'
               }`}>
-              <span>{tab.emoji}</span>
+              <span className={activeTab === tab.id ? 'scale-110 transition-transform' : 'transition-transform'}>{tab.emoji}</span>
               <span>{tab.label}</span>
             </button>
           ))}
@@ -405,12 +409,12 @@ export default function TripView({ tripId, user, currency, onBack, onOpenSetting
 
         {/* Expenses */}
         {activeTab === 'expenses' && (
-          <div className="space-y-3">
+          <div className="space-y-3.5">
             {expenses.length === 0 ? (
               <div className="text-center py-20">
-                <div className="w-20 h-20 bg-indigo-50 rounded-3xl flex items-center justify-center text-4xl mx-auto mb-4">🧾</div>
+                <div className="w-20 h-20 bg-indigo-50 rounded-[1.5rem] flex items-center justify-center text-4xl mx-auto mb-4 shadow-inner">🧾</div>
                 <p className="text-slate-700 font-bold text-lg">No expenses yet</p>
-                {isActive && <p className="text-slate-400 text-sm mt-1">Tap "+ Add" to log the first one.</p>}
+                {isActive && <p className="text-slate-500 text-sm mt-1 font-medium">Tap "+ Add" to log the first one.</p>}
               </div>
             ) : expenses.map(exp => {
               const payer = members.find(m => m.id === exp.member_id)
@@ -418,32 +422,32 @@ export default function TripView({ tripId, user, currency, onBack, onOpenSetting
               const isManualPayer = !payer?.user_id
               const catColor = getCategoryColor(exp.category)
               return (
-                <div key={exp.id} className="bg-white rounded-2xl px-5 py-4 flex items-center justify-between border border-slate-100 shadow-sm hover:shadow-md transition group">
-                  <div className="flex items-center gap-4">
-                    <div className={`w-11 h-11 rounded-2xl flex items-center justify-center text-xl shrink-0 ${catColor}`}>
+                <div key={exp.id} className="bg-white rounded-[1.25rem] px-5 py-4 flex items-center justify-between border border-slate-100 shadow-sm shadow-slate-100/50 hover:shadow-md transition-all group active:scale-[0.98]">
+                  <div className="flex items-center gap-4 min-w-0 pr-4">
+                    <div className={`w-12 h-12 rounded-[1.1rem] flex items-center justify-center text-2xl shrink-0 ${catColor}`}>
                       {getCategoryEmoji(exp.category)}
                     </div>
-                    <div>
-                      <p className="font-bold text-slate-800 text-sm">{exp.description}</p>
-                      <div className="flex items-center gap-2 mt-1 flex-wrap">
-                        <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${catColor}`}>
+                    <div className="truncate">
+                      <p className="font-bold text-slate-800 text-sm truncate leading-snug">{exp.description}</p>
+                      <div className="flex items-center gap-1.5 mt-1.5 flex-wrap">
+                        <span className={`text-[10px] px-2 py-0.5 rounded-md font-bold uppercase tracking-wider ${catColor}`}>
                           {exp.category}
                         </span>
-                        <span className="text-xs text-slate-400">·</span>
-                        <span className={`text-xs font-semibold ${isMe ? 'text-indigo-600' : 'text-slate-500'}`}>
+                        <span className="text-xs text-slate-300 font-bold">·</span>
+                        <span className={`text-xs font-bold truncate max-w-[80px] ${isMe ? 'text-indigo-600' : 'text-slate-500'}`}>
                           {isMe ? 'You' : payer?.display_name || 'Unknown'}
                         </span>
                         {isManualPayer && (
-                          <span className="text-xs bg-slate-100 text-slate-500 px-2 py-0.5 rounded-full font-medium">Manual</span>
+                          <span className="text-[10px] bg-slate-100 text-slate-500 px-1.5 py-0.5 rounded-md font-bold uppercase tracking-wider">Manual</span>
                         )}
-                        <span className="text-xs text-slate-400">·</span>
-                        <span className="text-xs text-slate-400">
+                        <span className="text-xs text-slate-300 font-bold">·</span>
+                        <span className="text-xs text-slate-400 font-medium whitespace-nowrap">
                           {new Date(exp.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })}
                         </span>
                       </div>
                     </div>
                   </div>
-                  <span className="text-indigo-600 font-black text-base">{fmt(exp.amount)}</span>
+                  <span className="text-indigo-600 font-black text-base shrink-0 tabular-nums">{fmt(exp.amount)}</span>
                 </div>
               )
             })}
@@ -452,38 +456,38 @@ export default function TripView({ tripId, user, currency, onBack, onOpenSetting
 
         {/* Summary */}
         {activeTab === 'summary' && (
-          <div className="space-y-3">
+          <div className="space-y-3.5">
             {Object.keys(byCategory).length === 0 ? (
-              <div className="text-center py-20 text-slate-400">No data yet.</div>
+              <div className="text-center py-20 text-slate-400 font-medium">No data yet.</div>
             ) : (
               <>
                 {Object.entries(byCategory).sort((a, b) => b[1] - a[1]).map(([cat, sum]) => {
                   const pct = Math.round((sum / total) * 100)
                   const catColor = getCategoryColor(cat)
                   return (
-                    <div key={cat} className="bg-white rounded-2xl p-5 border border-slate-100 shadow-sm">
-                      <div className="flex justify-between items-center mb-3">
+                    <div key={cat} className="bg-white rounded-[1.25rem] p-5 border border-slate-100 shadow-sm shadow-slate-100/50">
+                      <div className="flex justify-between items-center mb-3.5">
                         <div className="flex items-center gap-3">
-                          <div className={`w-10 h-10 rounded-xl flex items-center justify-center text-lg ${catColor}`}>
+                          <div className={`w-11 h-11 rounded-[1.1rem] flex items-center justify-center text-xl shadow-sm ${catColor}`}>
                             {getCategoryEmoji(cat)}
                           </div>
-                          <span className="font-bold text-slate-700">{cat}</span>
+                          <span className="font-bold text-slate-800 capitalize tracking-tight">{cat}</span>
                         </div>
                         <div className="text-right">
-                          <p className="font-black text-slate-800">{fmt(sum)}</p>
-                          <p className="text-xs text-slate-400">{pct}%</p>
+                          <p className="font-black text-slate-800 tabular-nums tracking-tight">{fmt(sum)}</p>
+                          <p className="text-xs font-bold text-slate-400 mt-0.5 tabular-nums">{pct}%</p>
                         </div>
                       </div>
-                      <div className="w-full bg-slate-100 rounded-full h-2">
-                        <div className="bg-gradient-to-r from-indigo-500 to-violet-500 h-2 rounded-full transition-all"
+                      <div className="w-full bg-slate-100 rounded-full h-2 overflow-hidden">
+                        <div className="bg-gradient-to-r from-indigo-500 to-violet-500 h-full rounded-full transition-all duration-700 ease-out"
                           style={{ width: `${pct}%` }} />
                       </div>
                     </div>
                   )
                 })}
-                <div className="bg-gradient-to-r from-indigo-600 to-violet-600 rounded-2xl p-5 flex justify-between items-center shadow-lg shadow-indigo-100">
-                  <span className="text-white font-bold">Total</span>
-                  <span className="text-white font-black text-2xl">{fmt(total)}</span>
+                <div className="bg-gradient-to-br from-indigo-600 to-violet-700 rounded-[1.25rem] p-5 flex justify-between items-center shadow-lg shadow-indigo-200 mt-2">
+                  <span className="text-white font-bold tracking-wider uppercase text-sm">Total</span>
+                  <span className="text-white font-black text-2xl tabular-nums tracking-tight">{fmt(total)}</span>
                 </div>
               </>
             )}
@@ -492,7 +496,7 @@ export default function TripView({ tripId, user, currency, onBack, onOpenSetting
 
         {/* Members */}
         {activeTab === 'members' && (
-          <div className="space-y-3">
+          <div className="space-y-3.5">
             {members.map((m, idx) => {
               const memberTotal = expenses.filter(e => e.member_id === m.id).reduce((s, e) => s + Number(e.amount), 0)
               const isMe = m.user_id === user.id
@@ -500,28 +504,28 @@ export default function TripView({ tripId, user, currency, onBack, onOpenSetting
               const colors = ['from-indigo-400 to-violet-500', 'from-rose-400 to-pink-500', 'from-amber-400 to-orange-500', 'from-emerald-400 to-teal-500']
               const pct = total > 0 ? Math.round((memberTotal / total) * 100) : 0
               return (
-                <div key={m.id} className="bg-white rounded-2xl px-5 py-4 border border-slate-100 shadow-sm">
-                  <div className="flex justify-between items-center mb-3">
-                    <div className="flex items-center gap-3">
-                      <div className={`w-11 h-11 rounded-2xl bg-gradient-to-br ${colors[idx % colors.length]} flex items-center justify-center text-white font-black text-sm shadow-md`}>
+                <div key={m.id} className="bg-white rounded-[1.25rem] px-5 py-4 border border-slate-100 shadow-sm shadow-slate-100/50 transition-all">
+                  <div className="flex justify-between items-center mb-4">
+                    <div className="flex items-center gap-3.5 min-w-0 pr-3">
+                      <div className={`w-12 h-12 shrink-0 rounded-[1.1rem] bg-gradient-to-br ${colors[idx % colors.length]} flex items-center justify-center text-white font-black text-lg shadow-md`}>
                         {(m.display_name || '?')[0].toUpperCase()}
                       </div>
-                      <div>
+                      <div className="truncate">
                         <div className="flex items-center gap-2 flex-wrap">
-                          <p className="font-bold text-slate-800 text-sm">{isMe ? 'You' : m.display_name}</p>
-                          {isMe && <span className="text-xs bg-indigo-100 text-indigo-600 px-2 py-0.5 rounded-full font-semibold">You</span>}
-                          {isManual && <span className="text-xs bg-slate-100 text-slate-500 px-2 py-0.5 rounded-full font-medium">Manual</span>}
+                          <p className="font-bold text-slate-800 text-[0.95rem] truncate">{isMe ? 'You' : m.display_name}</p>
+                          {isMe && <span className="text-[10px] bg-indigo-50 text-indigo-600 px-1.5 py-0.5 rounded-md font-bold uppercase tracking-wider">You</span>}
+                          {isManual && <span className="text-[10px] bg-slate-100 text-slate-500 px-1.5 py-0.5 rounded-md font-bold uppercase tracking-wider">Manual</span>}
                         </div>
-                        <p className="text-xs text-slate-400 capitalize mt-0.5">{m.role}</p>
+                        <p className="text-xs font-semibold text-slate-400 capitalize mt-1 tracking-wide">{m.role}</p>
                       </div>
                     </div>
-                    <div className="text-right">
-                      <p className="font-black text-slate-800">{fmt(memberTotal)}</p>
-                      <p className="text-xs text-slate-400">{pct}% of total</p>
+                    <div className="text-right shrink-0">
+                      <p className="font-black text-slate-800 tabular-nums tracking-tight">{fmt(memberTotal)}</p>
+                      <p className="text-[0.7rem] font-bold text-slate-400 mt-0.5 uppercase tracking-wider">{pct}%</p>
                     </div>
                   </div>
-                  <div className="w-full bg-slate-100 rounded-full h-1.5">
-                    <div className={`bg-gradient-to-r ${colors[idx % colors.length]} h-1.5 rounded-full transition-all`}
+                  <div className="w-full bg-slate-100 rounded-full h-1.5 overflow-hidden">
+                    <div className={`bg-gradient-to-r ${colors[idx % colors.length]} h-full rounded-full transition-all duration-700 ease-out`}
                       style={{ width: `${pct}%` }} />
                   </div>
                 </div>
@@ -540,8 +544,10 @@ export default function TripView({ tripId, user, currency, onBack, onOpenSetting
       {/* Floating Add Button */}
       {isActive && (
         <button onClick={() => setShowForm(true)}
-          className="fixed bottom-6 right-6 w-14 h-14 bg-gradient-to-br from-indigo-600 to-violet-600 text-white rounded-2xl shadow-xl shadow-indigo-300 flex items-center justify-center text-2xl hover:scale-105 transition-transform z-10 sm:hidden">
-          +
+          className="fixed bottom-6 right-6 mb-[env(safe-area-inset-bottom)] w-16 h-16 bg-gradient-to-br from-indigo-600 to-violet-600 text-white rounded-[1.25rem] shadow-[0_8px_30px_rgb(79,70,229,0.3)] flex items-center justify-center hover:scale-105 active:scale-95 transition-all z-10 sm:hidden">
+          <svg className="w-8 h-8 drop-shadow-sm" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+          </svg>
         </button>
       )}
 
