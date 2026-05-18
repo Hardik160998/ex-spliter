@@ -179,11 +179,10 @@ export default function TripView({ tripId, user, currency, onBack, onOpenSetting
   const [activeTab, setActiveTab] = useState('expenses')
 
   const fetchAll = async () => {
-    const [{ data: t }, { data: e }, { data: m }] = await Promise.all([
-      supabase.from('trips').select('*').eq('id', tripId).single(),
-      supabase.from('expenses').select('*').eq('trip_id', tripId).order('created_at', { ascending: false }),
-      supabase.rpc('get_trip_members', { p_trip_id: tripId }),
-    ])
+    const { data: t, error: tErr } = await supabase.from('trips').select('*').eq('id', tripId).single()
+    if (!t || tErr) { setLoading(false); return }
+    const { data: e } = await supabase.from('expenses').select('*').eq('trip_id', tripId).order('created_at', { ascending: false })
+    const { data: m } = await supabase.rpc('get_trip_members', { p_trip_id: tripId })
     setTrip(t)
     setExpenses(e ?? [])
     setMembers(m ?? [])

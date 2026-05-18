@@ -22,6 +22,9 @@ export default function App() {
   const [route, setRoute] = useState(getRoute)
   const [currency, setCurrency] = useState(() => localStorage.getItem('currency') || '₹')
 
+  // Invitation redemption states
+  const [redeemingInvite, setRedeemingInvite] = useState(false)
+
   const goTo = (path) => {
     const normalized = path === '/' ? '/' : (path.startsWith('/') ? path : `/${path}`)
     window.history.pushState({}, '', normalized)
@@ -58,6 +61,23 @@ export default function App() {
     await supabase.auth.signOut()
   }
 
+  // Intercept invite token on mount
+  useEffect(() => {
+    try {
+      const params = new URLSearchParams(window.location.search)
+      const token = params.get('token')
+      if (token) {
+        localStorage.setItem('invite_token', token)
+        // Clean URL parameters
+        const search = window.location.search.replace(/[?&]token=[^&]+/, '').replace(/^&/, '?')
+        const newUrl = window.location.pathname + (search === '?' ? '' : search)
+        window.history.replaceState({}, '', newUrl)
+      }
+    } catch (e) {
+      console.error('Failed to parse invite token from URL:', e)
+    }
+  }, [])
+
   // Listen to popstate (back/forward browser buttons)
   useEffect(() => {
     const onPop = () => setRoute(getRoute())
@@ -66,15 +86,55 @@ export default function App() {
   }, [])
 
   useEffect(() => {
-    try {
-      localStorage.removeItem('invite_token')
-    } catch {
-      /* ignore */
-    }
     supabase.auth.getSession().then(({ data: { session } }) => setSession(session ?? null))
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_e, s) => setSession(s ?? null))
     return () => subscription.unsubscribe()
   }, [])
+
+  // Redemption function
+  const redeemInvite = async (token) => {
+    setRedeemingInvite(true)
+    try {
+      const { data, error } = await supabase.rpc('redeem_invite', { p_token: token })
+      
+      try {
+        localStorage.removeItem('invite_token')
+      } catch {}
+
+      if (error) {
+        alert(`Failed to redeem invite: ${error.message}`)
+        return
+      }
+
+      if (data && data.ok === false) {
+        alert(`Failed to redeem invite: ${data.error || 'Invalid or expired invite link'}`)
+        return
+      }
+
+      if (data && data.trip_id) {
+        goTo(`/trip/${data.trip_id}`)
+      }
+    } catch (err) {
+      console.error('Error redeeming invite:', err)
+      try {
+        localStorage.removeItem('invite_token')
+      } catch {}
+    } finally {
+      setRedeemingInvite(false)
+    }
+  }
+
+  // Monitor session to trigger invite redemption
+  useEffect(() => {
+    if (session) {
+      try {
+        const token = localStorage.getItem('invite_token')
+        if (token) {
+          redeemInvite(token)
+        }
+      } catch {}
+    }
+  }, [session])
 
   const handleCurrencyChange = (c) => {
     setCurrency(c)
@@ -88,6 +148,25 @@ export default function App() {
         <div className="text-center space-y-3">
           <div className="text-4xl">✈️</div>
           <p className="text-slate-400 text-sm">Loading TripSplit...</p>
+        </div>
+      </div>
+    )
+  }
+
+  if (redeemingInvite) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-violet-50 flex items-center justify-center">
+        <div className="w-full max-w-sm p-8 text-center space-y-4">
+          <div className="text-5xl animate-bounce">🎫</div>
+          <h3 className="text-2xl font-black text-slate-800 bg-gradient-to-r from-indigo-600 to-violet-600 bg-clip-text text-transparent">
+            Redeeming Ticket...
+          </h3>
+          <p className="text-slate-500 text-sm">
+            We are validating your invitation and adding you to the trip. Please wait a moment.
+          </p>
+          <div className="w-16 h-1.5 bg-slate-100 rounded-full mx-auto overflow-hidden relative">
+            <div className="absolute top-0 bottom-0 bg-indigo-600 rounded-full animate-pulse w-full" />
+          </div>
         </div>
       </div>
     )
