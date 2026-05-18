@@ -339,50 +339,61 @@ export default function TripView({ tripId, user, currency, onBack, onOpenSetting
       </header>
 
       {/* ── Hero Banner ── */}
-      <div className={`relative overflow-hidden ${isActive ? 'bg-gradient-to-br from-indigo-600 via-violet-700 to-purple-800' : 'bg-gradient-to-br from-slate-700 to-slate-800'}`}>
-        <div className="absolute -top-12 -right-12 w-48 h-48 bg-white/10 rounded-full blur-2xl" />
-        <div className="absolute -bottom-16 -left-10 w-64 h-64 bg-indigo-500/20 rounded-full blur-3xl" />
-        <div className="max-w-4xl mx-auto px-6 py-8 relative z-10">
-          <div className="flex items-start justify-between mb-6">
-            <div>
-              <span className={`inline-flex items-center gap-1.5 text-xs font-bold px-3 py-1 rounded-full shadow-sm backdrop-blur-md ${isActive ? 'bg-white/20 text-white border border-white/20' : 'bg-white/10 text-slate-300 border border-white/10'}`}>
-                <span className={`w-1.5 h-1.5 rounded-full ${isActive ? 'bg-green-400 animate-pulse' : 'bg-slate-400'}`}></span>
-                {isActive ? 'Active' : 'Completed'}
+      <div className={`relative overflow-hidden ${isActive ? 'bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-indigo-500 via-violet-600 to-purple-800' : 'bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-slate-600 via-slate-700 to-slate-900'}`}>
+        <div className="absolute top-0 right-0 w-full h-full bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAiIGhlaWdodD0iMjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGNpcmNsZSBjeD0iMiIgY3k9IjIiIHI9IjIiIGZpbGw9IiNmZmYiIGZpbGwtb3BhY2l0eT0iMC4wNSIvPjwvc3ZnPg==')] opacity-30" />
+        <div className="absolute -top-24 -right-24 w-64 h-64 bg-indigo-400/30 rounded-full blur-[80px]" />
+        <div className="absolute -bottom-24 -left-12 w-80 h-80 bg-purple-500/20 rounded-full blur-[80px]" />
+        <div className="max-w-4xl mx-auto px-6 py-10 relative z-10">
+          <div className="flex items-start justify-between mb-8">
+            <div className="space-y-3">
+              <span className={`inline-flex items-center gap-2 text-[0.7rem] font-black px-3 py-1.5 rounded-full uppercase tracking-widest backdrop-blur-md shadow-sm border ${isActive ? 'bg-white/20 text-white border-white/30' : 'bg-black/20 text-slate-200 border-white/10'}`}>
+                <span className={`w-2 h-2 rounded-full shadow-sm ${isActive ? 'bg-green-400 animate-pulse' : 'bg-slate-400'}`}></span>
+                {isActive ? 'Active Trip' : 'Completed Trip'}
               </span>
-              <h1 className="text-3xl font-black text-white mt-3 tracking-tight">{trip?.name}</h1>
-              <p className="text-indigo-100/80 text-sm mt-1 font-medium">
-                Created {new Date(trip?.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
-              </p>
+              <div>
+                <h1 className="text-2xl sm:text-5xl font-black text-white tracking-tight drop-shadow-sm">{trip?.name}</h1>
+                <p className="text-indigo-100 text-sm mt-1.5 font-medium flex items-center gap-1.5">
+                  <svg className="w-4 h-4 opacity-70" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                  </svg>
+                  {new Date(trip?.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' })}
+                </p>
+              </div>
             </div>
             {baseCurrency !== currency && !ratesLoading && (
-              <span className="text-xs bg-white/20 text-white px-2.5 py-1 rounded-full font-semibold backdrop-blur-md border border-white/10">
-                {baseCurrency} → {currency}
+              <span className="text-xs bg-black/20 text-white px-3 py-1.5 rounded-full font-bold backdrop-blur-md border border-white/20 shadow-sm flex items-center gap-1">
+                {baseCurrency}
+                <svg className="w-3 h-3 opacity-70" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                </svg>
+                {currency}
               </span>
             )}
           </div>
 
           {/* Total + quick stats */}
-          <div className="mt-2 flex flex-col">
-            <p className="text-indigo-100/80 text-sm font-medium mb-1 uppercase tracking-wider">Total Spent</p>
-            <p className="text-5xl font-black text-white tracking-tight drop-shadow-sm flex items-baseline gap-1">
-              {fmt(total).replace(/[0-9.,]/g, '')}
+          <div className="mt-4 flex flex-col">
+            <p className="text-indigo-200/90 text-[0.7rem] font-bold mb-1.5 uppercase tracking-[0.2em]">Total Spent</p>
+            <p className="text-4xl sm:text-6xl font-black text-white tracking-tighter drop-shadow-md flex items-baseline gap-1.5">
+              <span className="text-xl sm:text-4xl opacity-80 font-bold">{fmt(total).replace(/[0-9.,]/g, '')}</span>
               <span className="tabular-nums">{fmt(total).replace(/[^0-9.,]/g, '')}</span>
             </p>
           </div>
 
-          <div className="grid grid-cols-3 gap-3 mt-6">
-            <div className="bg-white/10 backdrop-blur-md rounded-2xl px-3 py-4 text-center border border-white/10 shadow-lg transition-transform hover:scale-[1.02]">
-              <p className="text-2xl font-black text-white tabular-nums leading-none">{expenses.length}</p>
-              <p className="text-indigo-100/80 text-xs font-semibold mt-1.5 uppercase tracking-wider">Expenses</p>
-            </div>
-            <div className="bg-white/10 backdrop-blur-md rounded-2xl px-3 py-4 text-center border border-white/10 shadow-lg transition-transform hover:scale-[1.02]">
-              <p className="text-2xl font-black text-white tabular-nums leading-none">{members.length}</p>
-              <p className="text-indigo-100/80 text-xs font-semibold mt-1.5 uppercase tracking-wider">Members</p>
-            </div>
-            <div className="bg-white/10 backdrop-blur-md rounded-2xl px-3 py-4 text-center border border-white/10 shadow-lg transition-transform hover:scale-[1.02]">
-              <p className="text-2xl font-black text-white tabular-nums leading-none">{Object.keys(byCategory).length}</p>
-              <p className="text-indigo-100/80 text-xs font-semibold mt-1.5 uppercase tracking-wider">Categories</p>
-            </div>
+          <div className="grid grid-cols-3 gap-2 mt-5">
+            {[
+              { label: 'Expenses', value: expenses.length},
+              { label: 'Members', value: members.length},
+              { label: 'Categories', value: Object.keys(byCategory).length}
+            ].map((stat) => (
+              <div key={stat.label} className="bg-white/10 hover:bg-white/15 backdrop-blur-xl rounded-[1.25rem] px-4 py-5 text-center border border-white/20 shadow-[0_8px_30px_rgb(0,0,0,0.12)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_8px_30px_rgb(0,0,0,0.2)] group relative overflow-hidden">
+                <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                <div className="relative z-10 flex flex-col items-center">
+                  <p className="text-3xl font-black text-white tabular-nums leading-none tracking-tight">{stat.value}</p>
+                  <p className="text-indigo-100 text-[0.75rem] font-bold mt-2 uppercase tracking-widest opacity-90">{stat.label}</p>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       </div>

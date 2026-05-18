@@ -15,7 +15,7 @@ export default function Dashboard({ user, currency, onCurrencyChange, onSelectTr
   const fetchTrips = async () => {
     const { data, error } = await supabase
       .from('trip_members')
-      .select('trip_id, trips(id, name, status, owner_id, created_at, base_currency)')
+      .select('trip_id, trips(id, name, status, owner_id, created_at, base_currency, expenses(amount))')
       .eq('user_id', user.id)
     if (error) console.error('fetchTrips error:', error)
     const raw = data?.map(r => r.trips).filter(Boolean) ?? []
@@ -311,19 +311,17 @@ export default function Dashboard({ user, currency, onCurrencyChange, onSelectTr
                     </div>
 
                     <div className="flex items-center justify-between mt-4 pt-3 border-t border-slate-50">
-                      <div className="flex items-center gap-1.5">
-                        <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className={`text-[10px] px-2 py-0.5 rounded-md font-bold uppercase tracking-wider ${
                           isOwner ? 'bg-amber-50 text-amber-600' : 'bg-indigo-50 text-indigo-600'
                         }`}>
                           {isOwner ? '👑 Owner' : '👥 Member'}
                         </span>
-                        {trip.base_currency && (
-                          <span className="text-xs px-2 py-0.5 rounded-full bg-slate-50 text-slate-500 font-medium">
-                            {trip.base_currency}
-                          </span>
-                        )}
+                        <span className="text-xs font-bold bg-slate-50 border border-slate-100 text-slate-600 px-2.5 py-0.5 rounded-md">
+                          {trip.base_currency || '₹'} {(trip.expenses?.reduce((sum, e) => sum + Number(e.amount), 0) || 0).toFixed(2)} Spent
+                        </span>
                       </div>
-                      <span className="text-xs font-bold text-indigo-600 group-hover:translate-x-0.5 transition-transform">
+                      <span className="text-xs font-bold text-indigo-600 group-hover:translate-x-0.5 transition-transform shrink-0">
                         {trip.status === 'active' ? 'Open →' : 'View →'}
                       </span>
                     </div>
