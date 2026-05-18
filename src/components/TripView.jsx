@@ -2,6 +2,8 @@
 import { supabase } from '../supabaseClient'
 import ExpenseForm from './ExpenseForm'
 import AddMemberModal from './AddMemberModal'
+import ExpenseMenu from './ui/ExpenseMenu'
+import ConfirmationModal from './ConfirmationModal'
 import { useCurrencyRates } from '../hooks/useCurrencyRates'
 
 function getCategoryEmoji(cat = '') {
@@ -180,6 +182,9 @@ export default function TripView({ tripId, user, currency, onBack, onOpenSetting
   const [loading, setLoading] = useState(true)
   const [activeTab, setActiveTab] = useState('expenses')
   const [editingExpense, setEditingExpense] = useState(null)
+  const [deletingExpense, setDeletingExpense] = useState(null)
+  const [showDeleteTrip, setShowDeleteTrip] = useState(false)
+  const [deleteLoading, setDeleteLoading] = useState(false)
 
   const fetchAll = async () => {
     const { data: t, error: tErr } = await supabase.from('trips').select('*').eq('id', tripId).single()
@@ -210,6 +215,29 @@ export default function TripView({ tripId, user, currency, onBack, onOpenSetting
   const toggleStatus = async () => {
     await supabase.from('trips').update({ status: isActive ? 'completed' : 'active' }).eq('id', tripId)
     fetchAll()
+  }
+
+  const deleteExpense = async (expenseId) => {
+    setDeleteLoading(true)
+    const { error } = await supabase.from('expenses').delete().eq('id', expenseId)
+    if (!error) {
+      setExpenses(expenses.filter(e => e.id !== expenseId))
+      setDeletingExpense(null)
+    } else {
+      alert('Failed to delete expense: ' + error.message)
+    }
+    setDeleteLoading(false)
+  }
+
+  const deleteTrip = async () => {
+    setDeleteLoading(true)
+    const { error } = await supabase.from('trips').delete().eq('id', tripId)
+    setDeleteLoading(false)
+    if (!error) {
+      onBack()
+    } else {
+      alert('Failed to delete trip: ' + error.message)
+    }
   }
 
   if (loading) return (
@@ -322,15 +350,25 @@ export default function TripView({ tripId, user, currency, onBack, onOpenSetting
                 + Member
               </button>
             )}
-            {isOwner && (
-              <button onClick={toggleStatus}
-                className={`flex h-9 min-w-[72px] items-center justify-center text-xs px-3 rounded-xl font-bold transition active:scale-95 border ${
-                  isActive ? 'bg-amber-50 border-amber-200 text-amber-700 hover:bg-amber-100'
-                           : 'bg-green-50 border-green-200 text-green-700 hover:bg-green-100'
-                }`}>
-                {isActive ? '✓ Done' : '↺ Reopen'}
-              </button>
-            )}
+{isOwner && (
+               <button onClick={toggleStatus}
+                 className={`flex h-9 min-w-[72px] items-center justify-center text-xs px-3 rounded-xl font-bold transition active:scale-95 border ${
+                   isActive ? 'bg-amber-50 border-amber-200 text-amber-700 hover:bg-amber-100'
+                          : 'bg-green-50 border-green-200 text-green-700 hover:bg-green-100'
+                 }`}>
+                 {isActive ? '✓ Done' : '↺ Reopen'}
+               </button>
+             )}
+             {isOwner && (
+               <button onClick={() => setShowDeleteTrip(true)}
+                 className="flex h-9 w-9 items-center justify-center rounded-xl border border-rose-200 bg-rose-50 text-rose-600 transition hover:bg-rose-100 active:scale-95"
+                 title="Delete trip"
+               >
+                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+                   <path strokeLinecap="round" strokeLinejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9-5.25h-12M4.5 5.25h15" />
+                 </svg>
+               </button>
+             )}
             {isActive && (
               <button onClick={() => { setEditingExpense(null); setShowForm(true) }}
                 className="flex h-9 min-w-[72px] items-center justify-center text-xs px-4 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold transition shadow-[0_4px_14px_0_rgb(79,70,229,0.39)] active:scale-95">
@@ -422,66 +460,47 @@ export default function TripView({ tripId, user, currency, onBack, onOpenSetting
       <main className="max-w-4xl mx-auto px-5 py-5 pb-24">
 
         {/* Expenses */}
-        {activeTab === 'expenses' && (
-          <div className="space-y-3.5">
-            {expenses.length === 0 ? (
-              <div className="text-center py-16 sm:py-20">
-                <div className="w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-indigo-50 to-violet-50 rounded-[1.5rem] flex items-center justify-center text-3xl sm:text-4xl mx-auto mb-4 shadow-inner shadow-indigo-100/50">🧾</div>
-                <p className="text-slate-900 font-bold text-base sm:text-lg">No expenses yet</p>
-                {isActive && <p className="text-slate-400 text-sm mt-1 font-medium">Tap "+ Add" to log the first one.</p>}
-              </div>
-            ) : expenses.map(exp => {
-              const payer = members.find(m => m.id === exp.member_id)
-              const isMe = payer?.user_id === user.id
-              const isManualPayer = !payer?.user_id
-              const catColor = getCategoryColor(exp.category)
-              const canEdit = isOwner || isMe
-              const paidLabel = isMe ? 'You' : (payer?.display_name || 'Unknown')
-              return (
-                <div
-                  key={exp.id}
-                  className="group relative bg-white rounded-3xl border border-slate-100 shadow-[0_10px_30px_rgba(15,23,42,0.06)] hover:shadow-[0_16px_40px_rgba(79,70,229,0.10)] active:scale-[0.985] transition-all duration-200 overflow-hidden"
-                >
-                  <div className="p-4 sm:p-5">
-                    {/* Top: Icon + Title + Edit */}
-                    <div className="flex items-center gap-3">
-                      <div
-                        className={`w-12 h-12 rounded-2xl flex items-center justify-center text-xl ${catColor} shadow-sm`}
-                      >
-                        {getCategoryEmoji(exp.category)}
-                      </div>
+{activeTab === 'expenses' && (
+           <div className="space-y-3.5">
+             {expenses.length === 0 ? (
+               <div className="text-center py-16 sm:py-20">
+                 <div className="w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-indigo-50 to-violet-50 rounded-[1.5rem] flex items-center justify-center text-3xl sm:text-4xl mx-auto mb-4 shadow-inner shadow-indigo-100/50">🧾</div>
+                 <p className="text-slate-900 font-bold text-base sm:text-lg">No expenses yet</p>
+                 {isActive && <p className="text-slate-400 text-sm mt-1 font-medium">Tap "+ Add" to log the first one.</p>}
+               </div>
+             ) : expenses.map(exp => {
+               const payer = members.find(m => m.id === exp.member_id)
+               const isMe = payer?.user_id === user.id
+               const isManualPayer = !payer?.user_id
+               const catColor = getCategoryColor(exp.category)
+               const canEdit = isOwner || isMe
+               const canDelete = isOwner || isMe
+               const paidLabel = isMe ? 'You' : (payer?.display_name || 'Unknown')
+               return (
+                 <div
+                   key={exp.id}
+                   className="group relative bg-white rounded-3xl border border-slate-100 shadow-[0_10px_30px_rgba(15,23,42,0.06)] hover:shadow-[0_16px_40px_rgba(79,70,229,0.10)] active:scale-[0.985] transition-all duration-200 overflow-hidden"
+                 >
+                   <div className="p-4 sm:p-5">
+                     {/* Top: Icon + Title + Actions */}
+                     <div className="flex items-center gap-3">
+                       <div
+                         className={`w-12 h-12 rounded-2xl flex items-center justify-center text-xl ${catColor} shadow-sm`}
+                       >
+                         {getCategoryEmoji(exp.category)}
+                       </div>
 
-                      <h3 className="flex-1 text-[1rem] sm:text-[1.05rem] font-extrabold text-slate-950 leading-tight tracking-tight whitespace-nowrap overflow-hidden text-ellipsis">
-                        {exp.description}
-                      </h3>
+                       <h3 className="flex-1 text-[1rem] sm:text-[1.05rem] font-extrabold text-slate-950 leading-tight tracking-tight whitespace-nowrap overflow-hidden text-ellipsis">
+                         {exp.description}
+                       </h3>
 
-                      {canEdit && (
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setEditingExpense(exp);
-                            setShowForm(true);
-                          }}
-                          className="shrink-0 p-2 text-slate-300 hover:text-indigo-600 hover:bg-indigo-50 rounded-xl transition-colors"
-                          title="Edit expense"
-                          aria-label={`Edit ${exp.description}`}
-                        >
-                          <svg
-                            className="w-4 h-4"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            stroke="currentColor"
-                            strokeWidth={2}
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"
-                            />
-                          </svg>
-                        </button>
-                      )}
-                    </div>
+                      <ExpenseMenu
+                        canEdit={canEdit}
+                        canDelete={canDelete}
+                        onEdit={() => { setEditingExpense(exp); setShowForm(true) }}
+                        onDelete={() => setDeletingExpense(exp)}
+                      />
+                     </div>
 
                     {/* Middle: Category + Amount */}
                     <div className="mt-4 flex items-center justify-between gap-3">
@@ -624,24 +643,44 @@ export default function TripView({ tripId, user, currency, onBack, onOpenSetting
         </button>
       )}
 
-      {showForm && (
-        <ExpenseForm 
-          tripId={tripId} 
-          userId={user.id} 
-          members={members} 
-          currency={currency}
-          editExpense={editingExpense}
-          onClose={() => { setEditingExpense(null); setShowForm(false) }} 
-          onSaved={() => { setEditingExpense(null); setShowForm(false); fetchAll() }} 
-        />
-      )}
-      {showAddMember && (
-        <AddMemberModal
-          tripId={tripId}
-          onClose={() => setShowAddMember(false)}
-          onAdded={() => fetchAll()}
-        />
-      )}
-    </div>
-  )
-}
+{showForm && (
+         <ExpenseForm 
+           tripId={tripId} 
+           userId={user.id} 
+           members={members} 
+           currency={currency}
+           editExpense={editingExpense}
+           onClose={() => { setEditingExpense(null); setShowForm(false) }} 
+           onSaved={() => { setEditingExpense(null); setShowForm(false); fetchAll() }} 
+         />
+       )}
+       {showAddMember && (
+         <AddMemberModal
+           tripId={tripId}
+           onClose={() => setShowAddMember(false)}
+           onAdded={() => fetchAll()}
+         />
+       )}
+       <ConfirmationModal
+         isOpen={!!deletingExpense}
+         onClose={() => setDeletingExpense(null)}
+         onConfirm={() => deleteExpense(deletingExpense?.id)}
+         title="Delete Expense"
+         message={`Remove "${deletingExpense?.description}"? This will permanently delete this expense and update all balances.`}
+         confirmText="Delete"
+         variant="danger"
+         loading={deleteLoading}
+       />
+       <ConfirmationModal
+         isOpen={showDeleteTrip}
+         onClose={() => setShowDeleteTrip(false)}
+         onConfirm={deleteTrip}
+         title="Delete Trip"
+         message={`Delete "${trip?.name}"? This will permanently remove all expenses, settlements, and members. This action cannot be undone.`}
+         confirmText="Delete Trip"
+         variant="danger"
+         loading={deleteLoading}
+       />
+     </div>
+   )
+ }
