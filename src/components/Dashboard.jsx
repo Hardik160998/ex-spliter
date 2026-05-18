@@ -336,8 +336,10 @@ export default function Dashboard({ user, currency, onCurrencyChange, onSelectTr
       {/* ── Floating Create Button (mobile) ── */}
       {!showCreate && (
         <button onClick={() => setShowCreate(true)}
-          className="fixed bottom-6 right-6 w-14 h-14 bg-gradient-to-br from-indigo-600 to-violet-600 text-white rounded-2xl shadow-xl shadow-indigo-300 flex items-center justify-center text-2xl hover:scale-105 transition-transform z-10 sm:hidden">
-          +
+          className="fixed bottom-6 right-6 mb-[env(safe-area-inset-bottom)] w-14 h-14 bg-gradient-to-br from-indigo-600 to-violet-600 text-white rounded-[1.25rem] shadow-[0_8px_30px_rgb(79,70,229,0.3)] flex items-center justify-center hover:scale-105 active:scale-95 transition-all z-10 sm:hidden">
+          <svg className="w-6 h-6 drop-shadow-sm" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+          </svg>
         </button>
       )}
 

@@ -75,7 +75,7 @@ function SettleTab({ settlements, members, expenses, user, fmt, total }) {
   return (
     <div className="space-y-5">
       {/* Stats */}
-      <div className="grid grid-cols-3 gap-2 sm:gap-3">
+      <div className="grid grid-cols-3 gap-1 sm:gap-1">
         {[
           { label: 'Total Spent', value: fmt(total), color: 'text-slate-800' },
           { label: 'Members', value: members.length, color: 'text-indigo-600' },
@@ -400,7 +400,7 @@ export default function TripView({ tripId, user, currency, onBack, onOpenSetting
 
       {/* ── Tab Bar ── */}
       <div className="bg-white border-b border-slate-100 sticky top-[61px] z-10 shadow-sm">
-        <div className="max-w-4xl mx-auto px-4 flex overflow-x-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+        <div className="max-w-4xl mx-auto px-4 gap-2 flex overflow-x-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
           {TABS.map(tab => (
             <button key={tab.id} onClick={() => setActiveTab(tab.id)}
               className={`flex-1 min-w-[90px] flex justify-center items-center gap-1.5 px-3 py-4 text-sm font-bold border-b-[3px] transition-all whitespace-nowrap outline-none ${
@@ -555,8 +555,8 @@ export default function TripView({ tripId, user, currency, onBack, onOpenSetting
       {/* Floating Add Button */}
       {isActive && (
         <button onClick={() => setShowForm(true)}
-          className="fixed bottom-6 right-6 mb-[env(safe-area-inset-bottom)] w-16 h-16 bg-gradient-to-br from-indigo-600 to-violet-600 text-white rounded-[1.25rem] shadow-[0_8px_30px_rgb(79,70,229,0.3)] flex items-center justify-center hover:scale-105 active:scale-95 transition-all z-10 sm:hidden">
-          <svg className="w-8 h-8 drop-shadow-sm" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+          className="fixed bottom-6 right-6 mb-[env(safe-area-inset-bottom)] w-14 h-14 bg-gradient-to-br from-indigo-600 to-violet-600 text-white rounded-[1.25rem] shadow-[0_8px_30px_rgb(79,70,229,0.3)] flex items-center justify-center hover:scale-105 active:scale-95 transition-all z-10 sm:hidden">
+          <svg className="w-6 h-6 drop-shadow-sm" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
           </svg>
         </button>
