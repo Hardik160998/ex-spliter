@@ -1,11 +1,11 @@
-import { useState, useEffect } from 'react'
+﻿import { useState, useEffect } from 'react'
 import { supabase } from '../supabaseClient'
 import ExpenseForm from './ExpenseForm'
 import AddMemberModal from './AddMemberModal'
 import { useCurrencyRates } from '../hooks/useCurrencyRates'
 
 function getCategoryEmoji(cat = '') {
-  const map = {
+  const map = {   
     'food & drinks': '🍽️', 'food': '🍽️',
     'accommodation': '🏨', 'hotel': '🏨',
     'transport': '🚗', 'flight': '✈️', 'fuel': '⛽',
@@ -425,10 +425,10 @@ export default function TripView({ tripId, user, currency, onBack, onOpenSetting
         {activeTab === 'expenses' && (
           <div className="space-y-3.5">
             {expenses.length === 0 ? (
-              <div className="text-center py-20">
-                <div className="w-20 h-20 bg-indigo-50 rounded-[1.5rem] flex items-center justify-center text-4xl mx-auto mb-4 shadow-inner">🧾</div>
-                <p className="text-slate-700 font-bold text-lg">No expenses yet</p>
-                {isActive && <p className="text-slate-500 text-sm mt-1 font-medium">Tap "+ Add" to log the first one.</p>}
+              <div className="text-center py-16 sm:py-20">
+                <div className="w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-indigo-50 to-violet-50 rounded-[1.5rem] flex items-center justify-center text-3xl sm:text-4xl mx-auto mb-4 shadow-inner shadow-indigo-100/50">🧾</div>
+                <p className="text-slate-900 font-bold text-base sm:text-lg">No expenses yet</p>
+                {isActive && <p className="text-slate-400 text-sm mt-1 font-medium">Tap "+ Add" to log the first one.</p>}
               </div>
             ) : expenses.map(exp => {
               const payer = members.find(m => m.id === exp.member_id)
@@ -438,76 +438,91 @@ export default function TripView({ tripId, user, currency, onBack, onOpenSetting
               const canEdit = isOwner || isMe
               const paidLabel = isMe ? 'You' : (payer?.display_name || 'Unknown')
               return (
-                <div key={exp.id} className="group relative bg-white rounded-[1.25rem] border border-slate-100 shadow-[0_1px_3px_rgba(0,0,0,0.04),0_4px_14px_rgba(0,0,0,0.03)] hover:shadow-[0_4px_20px_rgba(0,0,0,0.06)] transition-all duration-200 active:scale-[0.985]">
-                  <div className="flex items-stretch gap-3 p-4 sm:px-5 sm:py-4">
-
-                    {/* Left side: icon + content */}
-                    <div className="flex items-start gap-3 min-w-0 flex-1">
-                      {/* Category Icon */}
-                      <div className={`w-11 h-11 sm:w-12 sm:h-12 rounded-[1rem] sm:rounded-[1.1rem] flex items-center justify-center text-xl sm:text-2xl shrink-0 ${catColor} shadow-sm`}>
+                <div
+                  key={exp.id}
+                  className="group relative bg-white rounded-3xl border border-slate-100 shadow-[0_10px_30px_rgba(15,23,42,0.06)] hover:shadow-[0_16px_40px_rgba(79,70,229,0.10)] active:scale-[0.985] transition-all duration-200 overflow-hidden"
+                >
+                  <div className="p-4 sm:p-5">
+                    {/* Top: Icon + Title + Edit */}
+                    <div className="flex items-center gap-3">
+                      <div
+                        className={`w-12 h-12 rounded-2xl flex items-center justify-center text-xl ${catColor} shadow-sm`}
+                      >
                         {getCategoryEmoji(exp.category)}
                       </div>
 
-                      {/* Content block */}
-                      <div className="min-w-0 flex-1 pt-0.5 sm:pt-1">
-                        {/* Title — never clamp, allow natural wrap */}
-                        <p className="text-[0.95rem] sm:text-sm text-slate-900 font-bold leading-snug break-words tracking-tight">
-                          {exp.description}
-                        </p>
+                      <h3 className="flex-1 text-[1rem] sm:text-[1.05rem] font-extrabold text-slate-950 leading-tight tracking-tight whitespace-nowrap overflow-hidden text-ellipsis">
+                        {exp.description}
+                      </h3>
 
-                        {/* Meta row */}
-                        <div className="flex items-center gap-1.5 mt-1.5 sm:mt-2 flex-wrap">
-                          {/* Category badge */}
-                          <span className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full ${catColor} shadow-sm`}>
-                            {exp.category}
-                          </span>
-
-                          <span className="text-slate-300 font-bold text-[10px]">·</span>
-
-                          {/* Payer name */}
-                          <span className={`text-[11px] sm:text-xs font-bold truncate max-w-[100px] sm:max-w-[120px] ${isMe ? 'text-indigo-600' : 'text-slate-500'}`} title={paidLabel}>
-                            {paidLabel}
-                          </span>
-
-                          {isManualPayer && (
-                            <span className="text-[9px] font-bold uppercase tracking-wider bg-slate-100 text-slate-500 px-1.5 py-0.5 rounded-full">Manual</span>
-                          )}
-
-                          <span className="text-slate-300 font-bold text-[10px]">·</span>
-
-                          {/* Date */}
-                          <span className="text-slate-400 text-[10px] sm:text-xs font-medium whitespace-nowrap">
-                            {new Date(exp.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Right side: amount + action */}
-                    <div className="flex items-center gap-2 sm:gap-3 shrink-0 pl-2 sm:pl-4 border-l border-slate-50">
-                      {/* Amount */}
-                      <span className="text-indigo-600 font-black text-[1.05rem] sm:text-base tabular-nums tracking-tight leading-none whitespace-nowrap">
-                        {fmt(exp.amount)}
-                      </span>
-
-                      {/* Edit button */}
                       {canEdit && (
                         <button
-                          onClick={(e) => { e.stopPropagation(); setEditingExpense(exp); setShowForm(true) }}
-                          className="p-1.5 sm:p-2 text-slate-300 hover:text-indigo-600 hover:bg-indigo-50 active:bg-indigo-100 rounded-lg sm:rounded-xl transition-colors shrink-0"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setEditingExpense(exp);
+                            setShowForm(true);
+                          }}
+                          className="shrink-0 p-2 text-slate-300 hover:text-indigo-600 hover:bg-indigo-50 rounded-xl transition-colors"
                           title="Edit expense"
                           aria-label={`Edit ${exp.description}`}
                         >
-                          <svg className="w-4 h-4 sm:w-[18px] sm:h-[18px]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                          <svg
+                            className="w-4 h-4"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                            strokeWidth={2}
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"
+                            />
                           </svg>
                         </button>
                       )}
                     </div>
 
+                    {/* Middle: Category + Amount */}
+                    <div className="mt-4 flex items-center justify-between gap-3">
+                      <span
+                        className={`inline-flex items-center px-4 py-2 rounded-full text-[11px] font-black uppercase tracking-wide ${catColor} shadow-sm`}
+                      >
+                        {exp.category}
+                      </span>
+
+                      <span className="text-indigo-600 font-black text-[1.35rem] sm:text-2xl tabular-nums tracking-tight whitespace-nowrap">
+                        {fmt(exp.amount)}
+                      </span>
+                    </div>
+
+                    {/* Bottom: Name + Date */}
+                    <div className="mt-4 pt-3 border-t border-slate-100 flex items-center gap-2 text-[12px] sm:text-sm">
+                      <span
+                        className="font-bold text-slate-600 truncate"
+                        title={paidLabel}
+                      >
+                        {paidLabel}
+                      </span>
+
+                      {isManualPayer && (
+                        <span className="text-[9px] font-bold uppercase bg-slate-100 text-slate-500 px-2 py-0.5 rounded-full">
+                          Manual
+                        </span>
+                      )}
+
+                      <span className="text-slate-300 font-bold">•</span>
+
+                      <time className="text-slate-400 font-semibold whitespace-nowrap">
+                        {new Date(exp.created_at).toLocaleDateString("en-IN", {
+                          day: "numeric",
+                          month: "short",
+                        })}
+                      </time>
+                    </div>
                   </div>
                 </div>
-              )
+              );
             })}
           </div>
         )}
