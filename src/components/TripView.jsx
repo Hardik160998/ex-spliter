@@ -19,23 +19,23 @@ function getCategoryEmoji(cat = '') {
 }
 
 const CATEGORY_COLORS = {
-  'food & drinks': 'bg-orange-100 text-orange-600',
-  'accommodation': 'bg-blue-100 text-blue-600',
-  'transport': 'bg-violet-100 text-violet-600',
-  'flight': 'bg-sky-100 text-sky-600',
-  'fuel': 'bg-yellow-100 text-yellow-600',
-  'shopping': 'bg-pink-100 text-pink-600',
-  'activities': 'bg-green-100 text-green-600',
-  'entertainment': 'bg-purple-100 text-purple-600',
-  'medical': 'bg-red-100 text-red-600',
-  'visa & documents': 'bg-teal-100 text-teal-600',
-  'communication': 'bg-cyan-100 text-cyan-600',
-  'trip booking': 'bg-fuchsia-100 text-fuchsia-600',
-  'other': 'bg-slate-100 text-slate-600',
+  'food & drinks': 'bg-orange-50 text-orange-700 border border-orange-100',
+  'accommodation': 'bg-blue-50 text-blue-700 border border-blue-100',
+  'transport': 'bg-violet-50 text-violet-700 border border-violet-100',
+  'flight': 'bg-sky-50 text-sky-700 border border-sky-100',
+  'fuel': 'bg-amber-50 text-amber-700 border border-amber-100',
+  'shopping': 'bg-pink-50 text-pink-700 border border-pink-100',
+  'activities': 'bg-emerald-50 text-emerald-700 border border-emerald-100',
+  'entertainment': 'bg-purple-50 text-purple-700 border border-purple-100',
+  'medical': 'bg-rose-50 text-rose-700 border border-rose-100',
+  'visa & documents': 'bg-teal-50 text-teal-700 border border-teal-100',
+  'communication': 'bg-cyan-50 text-cyan-700 border border-cyan-100',
+  'trip booking': 'bg-fuchsia-50 text-fuchsia-700 border border-fuchsia-100',
+  'other': 'bg-slate-50 text-slate-700 border border-slate-100',
 }
 
 function getCategoryColor(cat = '') {
-  return CATEGORY_COLORS[(cat || '').toLowerCase()] ?? 'bg-slate-100 text-slate-600'
+  return CATEGORY_COLORS[(cat || '').toLowerCase()] ?? 'bg-slate-50 text-slate-700 border border-slate-100'
 }
 
 function calcSettlements(members, expenses) {
@@ -436,45 +436,75 @@ export default function TripView({ tripId, user, currency, onBack, onOpenSetting
               const isManualPayer = !payer?.user_id
               const catColor = getCategoryColor(exp.category)
               const canEdit = isOwner || isMe
+              const paidLabel = isMe ? 'You' : (payer?.display_name || 'Unknown')
               return (
-                <div key={exp.id} className="bg-white rounded-[1.25rem] px-5 py-4 flex items-center justify-between border border-slate-100 shadow-sm shadow-slate-100/50 hover:shadow-md transition-all group active:scale-[0.98]">
-                  <div className="flex items-center gap-4 min-w-0 pr-4">
-                    <div className={`w-12 h-12 rounded-[1.1rem] flex items-center justify-center text-2xl shrink-0 ${catColor}`}>
-                      {getCategoryEmoji(exp.category)}
-                    </div>
-                    <div className="truncate">
-                      <p className="font-bold text-slate-900 text-sm truncate leading-snug tracking-tight">{exp.description}</p>
-                      <div className="flex items-center gap-1.5 mt-1.5 flex-wrap">
-                        <span className={`text-[10px] px-2 py-0.5 rounded-md font-bold uppercase tracking-wider ${catColor}`}>
-                          {exp.category}
-                        </span>
-                        <span className="text-xs text-slate-300 font-bold">·</span>
-                        <span className={`text-xs font-bold truncate max-w-[90px] ${isMe ? 'text-indigo-600' : 'text-slate-500'}`}>
-                          {isMe ? 'You' : payer?.display_name || 'Unknown'}
-                        </span>
-                        {isManualPayer && (
-                          <span className="text-[10px] bg-slate-100 text-slate-500 px-1.5 py-0.5 rounded-md font-bold uppercase tracking-wider">Manual</span>
-                        )}
-                        <span className="text-xs text-slate-300 font-bold">·</span>
-                        <span className="text-xs text-slate-400 font-medium whitespace-nowrap">
-                          {new Date(exp.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })}
-                        </span>
+                <div key={exp.id} className="group relative bg-white rounded-[1.25rem] border border-slate-100 shadow-[0_1px_3px_rgba(0,0,0,0.04),0_4px_14px_rgba(0,0,0,0.03)] hover:shadow-[0_4px_20px_rgba(0,0,0,0.06)] transition-all duration-200 active:scale-[0.985]">
+                  <div className="flex items-stretch gap-3 p-4 sm:px-5 sm:py-4">
+
+                    {/* Left side: icon + content */}
+                    <div className="flex items-start gap-3 min-w-0 flex-1">
+                      {/* Category Icon */}
+                      <div className={`w-11 h-11 sm:w-12 sm:h-12 rounded-[1rem] sm:rounded-[1.1rem] flex items-center justify-center text-xl sm:text-2xl shrink-0 ${catColor} shadow-sm`}>
+                        {getCategoryEmoji(exp.category)}
+                      </div>
+
+                      {/* Content block */}
+                      <div className="min-w-0 flex-1 pt-0.5 sm:pt-1">
+                        {/* Title — never clamp, allow natural wrap */}
+                        <p className="text-[0.95rem] sm:text-sm text-slate-900 font-bold leading-snug break-words tracking-tight">
+                          {exp.description}
+                        </p>
+
+                        {/* Meta row */}
+                        <div className="flex items-center gap-1.5 mt-1.5 sm:mt-2 flex-wrap">
+                          {/* Category badge */}
+                          <span className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full ${catColor} shadow-sm`}>
+                            {exp.category}
+                          </span>
+
+                          <span className="text-slate-300 font-bold text-[10px]">·</span>
+
+                          {/* Payer name */}
+                          <span className={`text-[11px] sm:text-xs font-bold truncate max-w-[100px] sm:max-w-[120px] ${isMe ? 'text-indigo-600' : 'text-slate-500'}`} title={paidLabel}>
+                            {paidLabel}
+                          </span>
+
+                          {isManualPayer && (
+                            <span className="text-[9px] font-bold uppercase tracking-wider bg-slate-100 text-slate-500 px-1.5 py-0.5 rounded-full">Manual</span>
+                          )}
+
+                          <span className="text-slate-300 font-bold text-[10px]">·</span>
+
+                          {/* Date */}
+                          <span className="text-slate-400 text-[10px] sm:text-xs font-medium whitespace-nowrap">
+                            {new Date(exp.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })}
+                          </span>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                  <div className="flex items-center gap-3 shrink-0">
-                    {canEdit && (
-                      <button 
-                        onClick={(e) => { e.stopPropagation(); setEditingExpense(exp); setShowForm(true) }}
-                        className="p-1.5 text-slate-300 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors"
-                        title="Edit Expense"
-                      >
-                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
-                        </svg>
-                      </button>
-                    )}
-                    <span className="text-indigo-600 font-black text-base tabular-nums tracking-tight">{fmt(exp.amount)}</span>
+
+                    {/* Right side: amount + action */}
+                    <div className="flex items-center gap-2 sm:gap-3 shrink-0 pl-2 sm:pl-4 border-l border-slate-50">
+                      {/* Amount */}
+                      <span className="text-indigo-600 font-black text-[1.05rem] sm:text-base tabular-nums tracking-tight leading-none whitespace-nowrap">
+                        {fmt(exp.amount)}
+                      </span>
+
+                      {/* Edit button */}
+                      {canEdit && (
+                        <button
+                          onClick={(e) => { e.stopPropagation(); setEditingExpense(exp); setShowForm(true) }}
+                          className="p-1.5 sm:p-2 text-slate-300 hover:text-indigo-600 hover:bg-indigo-50 active:bg-indigo-100 rounded-lg sm:rounded-xl transition-colors shrink-0"
+                          title="Edit expense"
+                          aria-label={`Edit ${exp.description}`}
+                        >
+                          <svg className="w-4 h-4 sm:w-[18px] sm:h-[18px]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                          </svg>
+                        </button>
+                      )}
+                    </div>
+
                   </div>
                 </div>
               )
@@ -540,7 +570,7 @@ export default function TripView({ tripId, user, currency, onBack, onOpenSetting
                       </div>
                       <div className="truncate">
                         <div className="flex items-center gap-2 flex-wrap">
-                          <p className="font-bold text-slate-900 text-sm truncate tracking-tight">{isMe ? 'You' : m.display_name}</p>
+                          <p className="font-bold text-slate-900 text-sm break-words tracking-tight">{isMe ? 'You' : m.display_name}</p>
                           {isMe && <span className="text-[10px] bg-indigo-50 text-indigo-600 px-1.5 py-0.5 rounded-md font-bold uppercase tracking-wider">You</span>}
                           {isManual && <span className="text-[10px] bg-slate-100 text-slate-500 px-1.5 py-0.5 rounded-md font-bold uppercase tracking-wider">Manual</span>}
                         </div>
