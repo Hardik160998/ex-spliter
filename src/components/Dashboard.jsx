@@ -111,7 +111,7 @@ export default function Dashboard({ user, currency, onCurrencyChange, onSelectTr
                 ? <img src={profile.avatar_url} alt="" className="w-full h-full object-cover" />
                 : initials}
             </div>
-            <span className="text-sm font-semibold text-slate-700 hidden sm:block max-w-[100px] truncate">
+            <span className="text-sm font-semibold text-slate-700 hidden sm:block max-w-[120px] truncate tracking-tight">
               {profile?.display_name || user.email}
             </span>
             <svg className="w-3.5 h-3.5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
@@ -131,9 +131,9 @@ export default function Dashboard({ user, currency, onCurrencyChange, onSelectTr
           <div className="absolute top-6 right-24 w-20 h-20 bg-white/10 rounded-full" />
 
           <div className="relative z-10">
-            <p className="text-indigo-200 text-sm font-medium mb-1">Good {getGreeting()},</p>
-            <h1 className="text-3xl font-black text-white mb-1">{firstName} 👋</h1>
-            <p className="text-indigo-200 text-sm mb-8">
+            <p className="text-indigo-200 text-xs font-semibold tracking-wide uppercase mb-1">Good {getGreeting()},</p>
+            <h1 className="text-3xl font-black text-white mb-1 tracking-tight">{firstName} 👋</h1>
+            <p className="text-indigo-200/80 text-sm font-medium mb-8">
               {active.length > 0
                 ? `You have ${active.length} active trip${active.length > 1 ? 's' : ''} in progress`
                 : 'Ready to plan your next adventure?'}
@@ -142,16 +142,16 @@ export default function Dashboard({ user, currency, onCurrencyChange, onSelectTr
             {/* Stats pills */}
             <div className="flex gap-3 mb-8">
               <div className="bg-white/15 backdrop-blur rounded-2xl px-4 py-3 flex-1 text-center">
-                <p className="text-2xl font-black text-white">{active.length}</p>
-                <p className="text-indigo-200 text-xs mt-0.5">Active</p>
+                <p className="text-2xl font-black text-white tabular-nums tracking-tight">{active.length}</p>
+                <p className="text-indigo-200 text-xs font-semibold mt-0.5 tracking-wide uppercase">Active</p>
               </div>
               <div className="bg-white/15 backdrop-blur rounded-2xl px-4 py-3 flex-1 text-center">
-                <p className="text-2xl font-black text-white">{completed.length}</p>
-                <p className="text-indigo-200 text-xs mt-0.5">Completed</p>
+                <p className="text-2xl font-black text-white tabular-nums tracking-tight">{completed.length}</p>
+                <p className="text-indigo-200 text-xs font-semibold mt-0.5 tracking-wide uppercase">Done</p>
               </div>
               <div className="bg-white/15 backdrop-blur rounded-2xl px-4 py-3 flex-1 text-center">
-                <p className="text-2xl font-black text-white">{trips.length}</p>
-                <p className="text-indigo-200 text-xs mt-0.5">Total</p>
+                <p className="text-2xl font-black text-white tabular-nums tracking-tight">{trips.length}</p>
+                <p className="text-indigo-200 text-xs font-semibold mt-0.5 tracking-wide uppercase">Total</p>
               </div>
             </div>
 
@@ -166,7 +166,7 @@ export default function Dashboard({ user, currency, onCurrencyChange, onSelectTr
         {/* ── Create Trip Inline Form (slides in) ── */}
         {showCreate && (
           <div className="mt-4 bg-white rounded-3xl border border-slate-200 shadow-lg p-5">
-            <h3 className="font-bold text-slate-800 mb-3">New Trip</h3>
+            <h3 className="font-bold text-slate-900 text-base tracking-tight mb-3">New Trip</h3>
             <form onSubmit={createTrip} className="space-y-3">
               <input
                 autoFocus
@@ -177,7 +177,7 @@ export default function Dashboard({ user, currency, onCurrencyChange, onSelectTr
 
               {/* Manual Members */}
               <div className="border-t border-slate-100 pt-3">
-                <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Members (no account needed)</p>
+                <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2">Members (no account needed)</p>
                 
                 {manualMembers.length > 0 && (
                   <div className="flex flex-wrap gap-2 mb-2">
@@ -293,10 +293,10 @@ export default function Dashboard({ user, currency, onCurrencyChange, onSelectTr
                           {getTripEmoji(trip.name)}
                         </div>
                         <div>
-                          <h3 className="font-bold text-slate-800 text-base group-hover:text-indigo-600 transition leading-tight">
+                          <h3 className="font-bold text-slate-900 text-base group-hover:text-indigo-600 transition leading-tight tracking-tight">
                             {trip.name}
                           </h3>
-                          <p className="text-xs text-slate-400 mt-0.5">
+                          <p className="text-xs text-slate-400 font-medium mt-0.5">
                             {new Date(trip.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
                           </p>
                         </div>
@@ -317,7 +317,7 @@ export default function Dashboard({ user, currency, onCurrencyChange, onSelectTr
                         }`}>
                           {isOwner ? '👑 Owner' : '👥 Member'}
                         </span>
-                        <span className="text-xs font-bold bg-slate-50 border border-slate-100 text-slate-600 px-2.5 py-0.5 rounded-md">
+                        <span className="text-xs font-bold bg-slate-50 border border-slate-100 text-slate-600 px-2.5 py-0.5 rounded-md tabular-nums tracking-tight">
                           {trip.base_currency || '₹'} {(trip.expenses?.reduce((sum, e) => sum + Number(e.amount), 0) || 0).toFixed(2)} Spent
                         </span>
                       </div>

@@ -12,6 +12,7 @@ function getCategoryEmoji(cat = '') {
     'shopping': '🛍️', 'activities': '🎯',
     'entertainment': '🎬', 'medical': '💊',
     'visa & documents': '📄', 'communication': '📱',
+    'trip booking': '🎫',
     'general': '📌', 'other': '💰',
   }
   return map[(cat || '').toLowerCase()] ?? '💰'
@@ -29,6 +30,7 @@ const CATEGORY_COLORS = {
   'medical': 'bg-red-100 text-red-600',
   'visa & documents': 'bg-teal-100 text-teal-600',
   'communication': 'bg-cyan-100 text-cyan-600',
+  'trip booking': 'bg-fuchsia-100 text-fuchsia-600',
   'other': 'bg-slate-100 text-slate-600',
 }
 
@@ -177,6 +179,7 @@ export default function TripView({ tripId, user, currency, onBack, onOpenSetting
   const [isOwner, setIsOwner] = useState(false)
   const [loading, setLoading] = useState(true)
   const [activeTab, setActiveTab] = useState('expenses')
+  const [editingExpense, setEditingExpense] = useState(null)
 
   const fetchAll = async () => {
     const { data: t, error: tErr } = await supabase.from('trips').select('*').eq('id', tripId).single()
@@ -329,7 +332,7 @@ export default function TripView({ tripId, user, currency, onBack, onOpenSetting
               </button>
             )}
             {isActive && (
-              <button onClick={() => setShowForm(true)}
+              <button onClick={() => { setEditingExpense(null); setShowForm(true) }}
                 className="flex h-9 min-w-[72px] items-center justify-center text-xs px-4 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold transition shadow-[0_4px_14px_0_rgb(79,70,229,0.39)] active:scale-95">
                 + Add
               </button>
@@ -432,6 +435,7 @@ export default function TripView({ tripId, user, currency, onBack, onOpenSetting
               const isMe = payer?.user_id === user.id
               const isManualPayer = !payer?.user_id
               const catColor = getCategoryColor(exp.category)
+              const canEdit = isOwner || isMe
               return (
                 <div key={exp.id} className="bg-white rounded-[1.25rem] px-5 py-4 flex items-center justify-between border border-slate-100 shadow-sm shadow-slate-100/50 hover:shadow-md transition-all group active:scale-[0.98]">
                   <div className="flex items-center gap-4 min-w-0 pr-4">
@@ -439,13 +443,13 @@ export default function TripView({ tripId, user, currency, onBack, onOpenSetting
                       {getCategoryEmoji(exp.category)}
                     </div>
                     <div className="truncate">
-                      <p className="font-bold text-slate-800 text-sm truncate leading-snug">{exp.description}</p>
+                      <p className="font-bold text-slate-900 text-sm truncate leading-snug tracking-tight">{exp.description}</p>
                       <div className="flex items-center gap-1.5 mt-1.5 flex-wrap">
                         <span className={`text-[10px] px-2 py-0.5 rounded-md font-bold uppercase tracking-wider ${catColor}`}>
                           {exp.category}
                         </span>
                         <span className="text-xs text-slate-300 font-bold">·</span>
-                        <span className={`text-xs font-bold truncate max-w-[80px] ${isMe ? 'text-indigo-600' : 'text-slate-500'}`}>
+                        <span className={`text-xs font-bold truncate max-w-[90px] ${isMe ? 'text-indigo-600' : 'text-slate-500'}`}>
                           {isMe ? 'You' : payer?.display_name || 'Unknown'}
                         </span>
                         {isManualPayer && (
@@ -458,7 +462,20 @@ export default function TripView({ tripId, user, currency, onBack, onOpenSetting
                       </div>
                     </div>
                   </div>
-                  <span className="text-indigo-600 font-black text-base shrink-0 tabular-nums">{fmt(exp.amount)}</span>
+                  <div className="flex items-center gap-3 shrink-0">
+                    {canEdit && (
+                      <button 
+                        onClick={(e) => { e.stopPropagation(); setEditingExpense(exp); setShowForm(true) }}
+                        className="p-1.5 text-slate-300 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors"
+                        title="Edit Expense"
+                      >
+                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                        </svg>
+                      </button>
+                    )}
+                    <span className="text-indigo-600 font-black text-base tabular-nums tracking-tight">{fmt(exp.amount)}</span>
+                  </div>
                 </div>
               )
             })}
@@ -482,7 +499,7 @@ export default function TripView({ tripId, user, currency, onBack, onOpenSetting
                           <div className={`w-11 h-11 rounded-[1.1rem] flex items-center justify-center text-xl shadow-sm ${catColor}`}>
                             {getCategoryEmoji(cat)}
                           </div>
-                          <span className="font-bold text-slate-800 capitalize tracking-tight">{cat}</span>
+                          <span className="font-bold text-slate-900 capitalize tracking-tight">{cat}</span>
                         </div>
                         <div className="text-right">
                           <p className="font-black text-slate-800 tabular-nums tracking-tight">{fmt(sum)}</p>
@@ -523,11 +540,11 @@ export default function TripView({ tripId, user, currency, onBack, onOpenSetting
                       </div>
                       <div className="truncate">
                         <div className="flex items-center gap-2 flex-wrap">
-                          <p className="font-bold text-slate-800 text-[0.95rem] truncate">{isMe ? 'You' : m.display_name}</p>
+                          <p className="font-bold text-slate-900 text-sm truncate tracking-tight">{isMe ? 'You' : m.display_name}</p>
                           {isMe && <span className="text-[10px] bg-indigo-50 text-indigo-600 px-1.5 py-0.5 rounded-md font-bold uppercase tracking-wider">You</span>}
                           {isManual && <span className="text-[10px] bg-slate-100 text-slate-500 px-1.5 py-0.5 rounded-md font-bold uppercase tracking-wider">Manual</span>}
                         </div>
-                        <p className="text-xs font-semibold text-slate-400 capitalize mt-1 tracking-wide">{m.role}</p>
+                        <p className="text-[10px] font-bold text-slate-400 capitalize mt-1 tracking-widest uppercase">{m.role}</p>
                       </div>
                     </div>
                     <div className="text-right shrink-0">
@@ -554,7 +571,7 @@ export default function TripView({ tripId, user, currency, onBack, onOpenSetting
 
       {/* Floating Add Button */}
       {isActive && (
-        <button onClick={() => setShowForm(true)}
+        <button onClick={() => { setEditingExpense(null); setShowForm(true) }}
           className="fixed bottom-6 right-6 mb-[env(safe-area-inset-bottom)] w-14 h-14 bg-gradient-to-br from-indigo-600 to-violet-600 text-white rounded-[1.25rem] shadow-[0_8px_30px_rgb(79,70,229,0.3)] flex items-center justify-center hover:scale-105 active:scale-95 transition-all z-10 sm:hidden">
           <svg className="w-6 h-6 drop-shadow-sm" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
@@ -563,8 +580,15 @@ export default function TripView({ tripId, user, currency, onBack, onOpenSetting
       )}
 
       {showForm && (
-        <ExpenseForm tripId={tripId} userId={user.id} members={members} currency={currency}
-          onClose={() => setShowForm(false)} onSaved={() => { setShowForm(false); fetchAll() }} />
+        <ExpenseForm 
+          tripId={tripId} 
+          userId={user.id} 
+          members={members} 
+          currency={currency}
+          editExpense={editingExpense}
+          onClose={() => { setEditingExpense(null); setShowForm(false) }} 
+          onSaved={() => { setEditingExpense(null); setShowForm(false); fetchAll() }} 
+        />
       )}
       {showAddMember && (
         <AddMemberModal

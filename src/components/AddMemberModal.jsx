@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '../supabaseClient'
+import Select from './ui/Select'
 
 export default function AddMemberModal({ tripId, onClose, onAdded, mode = 'email' }) {
   const [tab, setTab] = useState(mode)
@@ -236,22 +237,20 @@ export default function AddMemberModal({ tripId, onClose, onAdded, mode = 'email
               
               {manualMembers.length > 0 && (
                 <div className="space-y-1 mt-2">
-                  <label className="text-xs font-semibold text-slate-500 block">
+                  <label className="text-xs font-semibold text-slate-500 block mb-1">
                     Link with existing manual member:
                   </label>
-                  <select
-                    className="w-full bg-slate-100 border border-slate-200 text-slate-800 text-sm rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-indigo-400"
+                  <Select
                     value={selectedManualMemberId}
-                    onChange={(e) => setSelectedManualMemberId(e.target.value)}
+                    onChange={(val) => setSelectedManualMemberId(val)}
+                    placeholder="Do not merge"
                     disabled={loading}
-                  >
-                    <option value="">Do not merge</option>
-                    {manualMembers.map((m) => (
-                      <option key={m.id} value={m.id}>
-                        {m.display_name}
-                      </option>
-                    ))}
-                  </select>
+                    options={[
+                      { value: '', label: 'Do not merge', icon: '👤' },
+                      ...manualMembers.map(m => ({ value: m.id, label: m.display_name, icon: '🔗' }))
+                    ]}
+                    className="!bg-slate-100 !border-slate-200 !py-2.5 !text-sm"
+                  />
                 </div>
               )}
               

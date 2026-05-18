@@ -2,6 +2,25 @@
 @tailwind components;
 @tailwind utilities;
 
+@layer base {
+  html {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+
+  body {
+    @apply font-sans text-slate-800;
+    font-feature-settings: "cv11", "cv01", "cv02";
+  }
+
+  /* Premium number rendering for financial data */
+  .tabular-nums {
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: "tnum";
+  }
+}
+
 @layer utilities {
   @media (max-width: 768px) {
     /* Hide scrollbar for Chrome, Safari and Opera */
@@ -10,8 +29,34 @@
     }
     /* Hide scrollbar for IE, Edge and Firefox */
     * {
-      -ms-overflow-style: none !important;  /* IE and Edge */
-      scrollbar-width: none !important;  /* Firefox */
+      -ms-overflow-style: none !important;
+      scrollbar-width: none !important;
     }
+  }
+
+  /* Typography utility classes */
+  .text-display {
+    @apply text-2xl font-bold tracking-tight text-slate-900;
+  }
+  .text-heading {
+    @apply text-lg font-bold tracking-tight text-slate-800;
+  }
+  .text-subheading {
+    @apply text-base font-semibold text-slate-700;
+  }
+  .text-body {
+    @apply text-sm font-medium text-slate-600;
+  }
+  .text-caption {
+    @apply text-xs font-medium text-slate-500;
+  }
+  .text-label {
+    @apply text-[10px] font-bold uppercase tracking-widest text-slate-500;
+  }
+  .text-financial {
+    @apply font-bold tabular-nums tracking-tight;
+  }
+  .text-financial-lg {
+    @apply text-xl font-black tabular-nums tracking-tight;
   }
 }
