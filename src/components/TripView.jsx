@@ -218,26 +218,27 @@ export default function TripView({ tripId, user, currency, onBack, onOpenSetting
   }
 
   const deleteExpense = async (expenseId) => {
+    if (!expenseId) return
     setDeleteLoading(true)
-    const { error } = await supabase.from('expenses').delete().eq('id', expenseId)
-    if (!error) {
-      setExpenses(expenses.filter(e => e.id !== expenseId))
-      setDeletingExpense(null)
+    const { data, error } = await supabase.from('expenses').delete().eq('id', expenseId).select()
+    if (error || !data?.length) {
+      alert(error ? 'Failed to delete expense: ' + error.message : 'Expense not found or permission denied.')
     } else {
-      alert('Failed to delete expense: ' + error.message)
+      setExpenses(prev => prev.filter(e => e.id !== expenseId))
+      setDeletingExpense(null)
     }
     setDeleteLoading(false)
   }
 
   const deleteTrip = async () => {
     setDeleteLoading(true)
-    const { error } = await supabase.from('trips').delete().eq('id', tripId)
-    setDeleteLoading(false)
-    if (!error) {
-      onBack()
+    const { data, error } = await supabase.from('trips').delete().eq('id', tripId).select()
+    if (error || !data?.length) {
+      alert(error ? 'Failed to delete trip: ' + error.message : 'Trip not found or permission denied.')
     } else {
-      alert('Failed to delete trip: ' + error.message)
+      onBack()
     }
+    setDeleteLoading(false)
   }
 
   if (loading) return (

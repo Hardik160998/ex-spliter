@@ -14,6 +14,8 @@ A modern group expense tracker with trip history, email invitations, and support
 2. In **SQL Editor**, run migrations in order:
    - `supabase/migrations/001_initial_schema.sql`
    - `supabase/migrations/002_manual_members.sql`
+   - `supabase/migrations/20260518000000_add_expense_update.sql`
+   - `supabase/migrations/20260518000001_add_delete_policies.sql`
 3. Deploy the two edge functions (see below)
 
 ### 2. Environment Variables
