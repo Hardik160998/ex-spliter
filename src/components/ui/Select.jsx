@@ -11,7 +11,6 @@ export default function Select({
   const [isOpen, setIsOpen] = useState(false)
   const containerRef = useRef(null)
 
-  // Handle clicking outside to close
   useEffect(() => {
     function handleClickOutside(event) {
       if (containerRef.current && !containerRef.current.contains(event.target)) {
@@ -34,7 +33,9 @@ export default function Select({
         type="button"
         disabled={disabled}
         onClick={() => !disabled && setIsOpen(!isOpen)}
-        className={`w-full bg-slate-50 border border-slate-200 text-slate-800 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-indigo-400 focus:border-transparent transition flex items-center justify-between shadow-sm ${disabled ? 'opacity-50 cursor-not-allowed' : 'active:scale-[0.99]'} ${className}`}
+        className={`w-full bg-surface-50 border border-surface-200 text-surface-500 rounded-xl px-4 py-3 outline-none transition-all flex items-center justify-between ${
+          disabled ? 'opacity-50 cursor-not-allowed' : 'hover:border-brand-200 focus:border-brand-500 focus:ring-2 focus:ring-brand-100 active:scale-[0.99]'
+        } ${className}`}
       >
         <div className="flex items-center gap-2 truncate">
           {selectedOption ? (
@@ -44,11 +45,11 @@ export default function Select({
               {selectedOption.suffix && <span className="shrink-0">{selectedOption.suffix}</span>}
             </>
           ) : (
-            <span className="text-slate-400 font-medium">{placeholder}</span>
+            <span className="text-surface-300 font-medium">{placeholder}</span>
           )}
         </div>
         <svg 
-          className={`w-5 h-5 text-slate-400 shrink-0 transition-transform duration-300 ${isOpen ? 'rotate-180 text-indigo-500' : ''}`} 
+          className={`w-5 h-5 text-surface-400 shrink-0 transition-transform duration-300 ${isOpen ? 'rotate-180 text-brand-500' : ''}`} 
           fill="none" 
           viewBox="0 0 24 24" 
           stroke="currentColor" 
@@ -59,8 +60,8 @@ export default function Select({
       </button>
 
       {isOpen && (
-        <div className="absolute z-50 w-full mt-2 bg-white/95 backdrop-blur-xl border border-slate-100 rounded-2xl shadow-[0_10px_40px_-10px_rgba(0,0,0,0.15)] overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
-          <ul className="max-h-60 overflow-y-auto overscroll-contain py-1.5 [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-thumb]:bg-slate-200 [&::-webkit-scrollbar-thumb]:rounded-full">
+        <div className="absolute z-50 w-full mt-2 bg-white/95 backdrop-blur-xl border border-surface-100 rounded-2xl shadow-elevated overflow-hidden animate-fadeIn">
+          <ul className="max-h-60 overflow-y-auto overscroll-contain py-1.5 [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-thumb]:bg-surface-200 [&::-webkit-scrollbar-thumb]:rounded-full">
             {options.map((opt) => {
               const isSelected = opt.value === value;
               return (
@@ -71,17 +72,17 @@ export default function Select({
                       onChange(opt.value)
                       setIsOpen(false)
                     }}
-                    className={`w-full flex items-center gap-2.5 px-4 py-3 text-left transition-colors active:bg-indigo-100 ${
+                    className={`w-full flex items-center gap-2.5 px-4 py-3 text-left transition-colors active:bg-brand-50 ${
                       isSelected 
-                        ? 'bg-indigo-50/80 text-indigo-700 font-bold' 
-                        : 'text-slate-700 hover:bg-slate-50 font-medium'
+                        ? 'bg-brand-50/80 text-brand-700 font-bold' 
+                        : 'text-surface-500 hover:bg-surface-50 font-medium'
                     }`}
                   >
                     {opt.icon && <span className="text-lg shrink-0">{opt.icon}</span>}
                     <span className="truncate flex-1">{opt.label}</span>
                     {opt.suffix && <span className="shrink-0">{opt.suffix}</span>}
                     {isSelected && (
-                      <svg className="w-5 h-5 text-indigo-600 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                      <svg className="w-5 h-5 text-brand-600 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                         <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                       </svg>
                     )}
@@ -90,7 +91,7 @@ export default function Select({
               )
             })}
             {options.length === 0 && (
-              <li className="px-4 py-3 text-sm text-slate-500 text-center">No options</li>
+              <li className="px-4 py-3 text-sm text-surface-400 text-center">No options</li>
             )}
           </ul>
         </div>

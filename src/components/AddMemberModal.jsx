@@ -9,16 +9,13 @@ export default function AddMemberModal({ tripId, onClose, onAdded, mode = 'email
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   
-  // Custom Invite Link States
   const [inviteUrl, setInviteUrl] = useState('')
   const [copied, setCopied] = useState(false)
   const [showInvitePrompt, setShowInvitePrompt] = useState(false)
 
-  // Manual Member Merge States
   const [manualMembers, setManualMembers] = useState([])
   const [selectedManualMemberId, setSelectedManualMemberId] = useState('')
 
-  // Fetch unlinked manual members of this trip
   useEffect(() => {
     const fetchManualMembers = async () => {
       try {
@@ -83,7 +80,7 @@ export default function AddMemberModal({ tripId, onClose, onAdded, mode = 'email
     setError('')
     try {
       const expiresAt = new Date()
-      expiresAt.setDate(expiresAt.getDate() + 7) // expires in 7 days
+      expiresAt.setDate(expiresAt.getDate() + 7)
 
       const { data, error: err } = await supabase
         .from('trip_invites')
@@ -143,23 +140,31 @@ export default function AddMemberModal({ tripId, onClose, onAdded, mode = 'email
   }
 
   return (
-    <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-50 px-4">
-      <div className="bg-white rounded-2xl p-6 w-full max-w-md shadow-2xl border border-slate-200">
-        <h3 className="text-lg font-bold text-slate-800 mb-1">Add Member</h3>
-        <p className="text-slate-500 text-sm mb-4">Add someone to this trip.</p>
+    <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50 px-4">
+      <div className="card-elevated p-6 w-full max-w-md animate-scaleIn" onClick={e => e.stopPropagation()}>
+        <div className="flex items-center justify-between mb-4">
+          <div>
+            <h3 className="text-lg font-bold text-surface-500 mb-0.5">Add Member</h3>
+            <p className="text-surface-400 text-sm">Add someone to this trip.</p>
+          </div>
+          <button onClick={onClose} className="btn-ghost w-8 h-8 flex items-center justify-center p-0">
+            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
 
-        {/* Tab Switcher */}
         {!inviteUrl && (
-          <div className="flex gap-1 bg-slate-100 p-1 rounded-xl mb-4">
+          <div className="flex gap-1 bg-surface-100 p-1 rounded-xl mb-4">
             <button
               onClick={() => setTab('email')}
-              className={`flex-1 py-2 rounded-lg text-sm font-semibold transition ${tab === 'email' ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-500'}`}
+              className={`flex-1 py-2 rounded-lg text-sm font-semibold transition-all ${tab === 'email' ? 'bg-white text-brand-600 shadow-soft' : 'text-surface-400 hover:text-surface-500'}`}
             >
               By Email
             </button>
             <button
               onClick={() => setTab('manual')}
-              className={`flex-1 py-2 rounded-lg text-sm font-semibold transition ${tab === 'manual' ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-500'}`}
+              className={`flex-1 py-2 rounded-lg text-sm font-semibold transition-all ${tab === 'manual' ? 'bg-white text-brand-600 shadow-soft' : 'text-surface-400 hover:text-surface-500'}`}
             >
               By Name
             </button>
@@ -169,14 +174,14 @@ export default function AddMemberModal({ tripId, onClose, onAdded, mode = 'email
         {tab === 'email' ? (
           inviteUrl ? (
             <div className="space-y-4 text-center py-2">
-              <div className="w-12 h-12 bg-green-50 rounded-full flex items-center justify-center text-green-500 text-xl mx-auto mb-1 shadow-sm">
+              <div className="w-12 h-12 bg-brand-50 rounded-full flex items-center justify-center text-brand-600 text-xl mx-auto mb-1 shadow-sm">
                 🎫
               </div>
               <div>
-                <h4 className="font-bold text-slate-800 text-sm">Invite Link Created!</h4>
-                <p className="text-xs text-slate-400 mt-0.5">Share this link with your friend to join the trip.</p>
+                <h4 className="font-bold text-surface-500 text-sm">Invite Link Created!</h4>
+                <p className="text-xs text-surface-400 mt-0.5">Share this link with your friend to join the trip.</p>
               </div>
-              <div className="flex bg-slate-50 border border-slate-200 rounded-xl p-2.5 items-center justify-center select-all overflow-x-auto text-xs text-slate-600 font-mono max-w-full truncate">
+              <div className="flex bg-surface-50 border border-surface-200 rounded-xl p-2.5 items-center justify-center select-all overflow-x-auto text-xs text-surface-500 font-mono max-w-full truncate">
                 {inviteUrl}
               </div>
               <div className="flex gap-2">
@@ -189,25 +194,25 @@ export default function AddMemberModal({ tripId, onClose, onAdded, mode = 'email
                     setShowInvitePrompt(false)
                     setError('')
                   }}
-                  className="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 py-2 rounded-lg text-sm transition font-semibold"
+                  className="btn-secondary flex-1"
                 >
                   Close
                 </button>
                 <button
                   type="button"
                   onClick={handleCopy}
-                  className="flex-1 bg-indigo-600 hover:bg-indigo-500 text-white py-2 rounded-lg text-sm transition font-bold shadow-md shadow-indigo-150 flex items-center justify-center gap-1.5"
+                  className="btn-primary flex-1"
                 >
                   {copied ? (
                     <>
-                      <svg className="w-4.5 h-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
                         <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
                       </svg>
                       Copied!
                     </>
                   ) : (
                     <>
-                      <svg className="w-4.5 h-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                         <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 7.5V6.108c0-1.135.845-2.098 1.976-2.192.373-.03.748-.057 1.123-.08M15.75 18H18a2.25 2.25 0 002.25-2.25V6.108c0-1.135-.845-2.098-1.976-2.192a48.424 48.424 0 00-1.123-.08M15.75 18.75v-1.875a3.375 3.375 0 00-3.375-3.375h-1.5a1.125 1.125 0 01-1.125-1.125v-1.5A3.375 3.375 0 006.375 7.5H5.25m11.9-3.664A2.251 2.251 0 0015 2.25h-1.5a2.251 2.251 0 00-2.15 1.586m5.8 0c.065.21.1.433.1.664v.75h-6V4.5c0-.231.035-.454.1-.664M6.75 7.5H4.875c-.621 0-1.125.504-1.125 1.125v12c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V16.5a9 9 0 00-9-9z" />
                       </svg>
                       Copy Link
@@ -219,9 +224,9 @@ export default function AddMemberModal({ tripId, onClose, onAdded, mode = 'email
           ) : (
             <form onSubmit={submitByEmail} className="space-y-3">
               <div>
-                <label className="text-xs font-semibold text-slate-500 mb-1 block">Email Address</label>
+                <label className="input-label">Email Address</label>
                 <input
-                  className="w-full bg-slate-100 border border-slate-200 text-slate-800 rounded-lg px-4 py-2.5 outline-none focus:ring-2 focus:ring-indigo-400"
+                  className="input"
                   type="email"
                   placeholder="friend@email.com"
                   value={email}
@@ -237,9 +242,7 @@ export default function AddMemberModal({ tripId, onClose, onAdded, mode = 'email
               
               {manualMembers.length > 0 && (
                 <div className="space-y-1 mt-2">
-                  <label className="text-xs font-semibold text-slate-500 block mb-1">
-                    Link with existing manual member:
-                  </label>
+                  <label className="input-label">Link with existing manual member:</label>
                   <Select
                     value={selectedManualMemberId}
                     onChange={(val) => setSelectedManualMemberId(val)}
@@ -249,13 +252,12 @@ export default function AddMemberModal({ tripId, onClose, onAdded, mode = 'email
                       { value: '', label: 'Do not merge', icon: '👤' },
                       ...manualMembers.map(m => ({ value: m.id, label: m.display_name, icon: '🔗' }))
                     ]}
-                    className="!bg-slate-100 !border-slate-200 !py-2.5 !text-sm"
                   />
                 </div>
               )}
               
               {showInvitePrompt ? (
-                <div className="bg-indigo-50/50 border border-indigo-100 rounded-xl p-3 text-xs text-indigo-700 mt-2 space-y-2.5">
+                <div className="bg-brand-50/50 border border-brand-100 rounded-xl p-3 text-xs text-brand-700 mt-2 space-y-2.5">
                   <p className="font-medium leading-relaxed">
                     💡 <strong>User Not Registered:</strong> This email doesn't have a TripSplit account yet. Generate an invite link so they can register and automatically join your trip!
                   </p>
@@ -263,18 +265,18 @@ export default function AddMemberModal({ tripId, onClose, onAdded, mode = 'email
                     type="button"
                     onClick={generateInvite}
                     disabled={loading}
-                    className="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-2 rounded-lg transition disabled:opacity-50 flex items-center justify-center gap-1 shadow-sm"
+                    className="btn-primary w-full"
                   >
                     🎫 {loading ? 'Generating…' : 'Generate Invite Link'}
                   </button>
                 </div>
               ) : (
-                error && <p className="text-red-500 text-sm">{error}</p>
+                error && <p className="text-accent-red text-sm">{error}</p>
               )}
 
               <div className="flex gap-2 pt-1">
-                <button type="button" onClick={onClose} className="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 py-2 rounded-lg transition" disabled={loading}>Cancel</button>
-                <button disabled={loading} className="flex-1 bg-indigo-600 hover:bg-indigo-500 text-white py-2 rounded-lg font-semibold transition disabled:opacity-50">
+                <button type="button" onClick={onClose} className="btn-secondary flex-1" disabled={loading}>Cancel</button>
+                <button type="submit" disabled={loading} className="btn-primary flex-1">
                   {loading ? 'Adding…' : 'Add Member'}
                 </button>
               </div>
@@ -283,7 +285,7 @@ export default function AddMemberModal({ tripId, onClose, onAdded, mode = 'email
         ) : (
           <div className="space-y-3">
             <input
-              className="w-full bg-slate-100 border border-slate-200 text-slate-800 rounded-lg px-4 py-2.5 outline-none focus:ring-2 focus:ring-indigo-400"
+              className="input"
               type="text"
               placeholder="Name (e.g. Hardik, Raj…)"
               value={name}
@@ -292,11 +294,11 @@ export default function AddMemberModal({ tripId, onClose, onAdded, mode = 'email
               required
               disabled={loading}
             />
-            <p className="text-xs text-slate-400">No account needed. They can be added to the trip later as a registered member too.</p>
-            {error && <p className="text-red-500 text-sm">{error}</p>}
+            <p className="text-xs text-surface-400">No account needed. They can be added to the trip later as a registered member too.</p>
+            {error && <p className="text-accent-red text-sm">{error}</p>}
             <div className="flex gap-2 pt-1">
-              <button type="button" onClick={onClose} className="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 py-2 rounded-lg transition" disabled={loading}>Cancel</button>
-              <button onClick={addManualMember} disabled={loading} className="flex-1 bg-indigo-600 hover:bg-indigo-500 text-white py-2 rounded-lg font-semibold transition disabled:opacity-50">
+              <button type="button" onClick={onClose} className="btn-secondary flex-1" disabled={loading}>Cancel</button>
+              <button onClick={addManualMember} disabled={loading} className="btn-primary flex-1">
                 {loading ? 'Adding…' : 'Add Member'}
               </button>
             </div>

@@ -23,20 +23,17 @@ export default function ConfirmationModal({
   if (!isOpen) return null
 
   const isDanger = variant === 'danger'
-  const accentColor = isDanger ? 'rose' : 'indigo'
 
   return (
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4 bg-black/20 backdrop-blur-sm animate-fadeIn">
       <div 
-        className="bg-white rounded-t-[1.5rem] sm:rounded-[1.5rem] w-full max-w-md shadow-2xl shadow-slate-900/20 border border-slate-100 transform transition-all duration-300 animate-slideUp"
+        className="bg-white rounded-t-2xl sm:rounded-2xl w-full max-w-md shadow-modal border border-surface-100 transform transition-all duration-300 animate-slideUp"
         onClick={e => e.stopPropagation()}
       >
         <div className="p-6">
           <div className="flex items-start gap-4 mb-5">
             <div className={`shrink-0 w-12 h-12 rounded-2xl flex items-center justify-center ${
-              isDanger 
-                ? 'bg-rose-50 text-rose-600' 
-                : 'bg-indigo-50 text-indigo-600'
+              isDanger ? 'bg-red-50 text-accent-red' : 'bg-brand-50 text-brand-600'
             }`}>
               {isDanger ? (
                 <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
@@ -49,8 +46,8 @@ export default function ConfirmationModal({
               )}
             </div>
             <div className="flex-1 min-w-0">
-              <h3 className="text-lg font-bold text-slate-900 tracking-tight">{title}</h3>
-              <p className="text-sm text-slate-500 mt-1.5 leading-relaxed">{message}</p>
+              <h3 className="text-lg font-bold text-surface-500 tracking-tight">{title}</h3>
+              <p className="text-sm text-surface-400 mt-1.5 leading-relaxed">{message}</p>
             </div>
           </div>
 
@@ -59,7 +56,7 @@ export default function ConfirmationModal({
               type="button"
               onClick={onClose}
               disabled={loading}
-              className="flex-1 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold py-3 text-sm transition disabled:opacity-50"
+              className="btn-secondary flex-1"
             >
               {cancelText}
             </button>
@@ -67,10 +64,10 @@ export default function ConfirmationModal({
               type="button"
               onClick={onConfirm}
               disabled={loading}
-              className={`flex-1 rounded-xl font-bold py-3 text-sm transition shadow-lg disabled:opacity-70 flex items-center justify-center gap-2 ${
+              className={`flex-1 rounded-xl font-bold py-3 text-sm transition-all duration-200 disabled:opacity-70 flex items-center justify-center gap-2 active:scale-[0.97] ${
                 isDanger 
-                  ? 'bg-rose-600 hover:bg-rose-500 text-white shadow-rose-200/60' 
-                  : `bg-${accentColor}-600 hover:bg-${accentColor}-500 text-white shadow-${accentColor}-200/60`
+                  ? 'bg-accent-red hover:bg-red-500 text-white shadow-lg' 
+                  : 'bg-brand-500 hover:bg-brand-600 text-white shadow-green-glow'
               }`}
             >
               {loading && (

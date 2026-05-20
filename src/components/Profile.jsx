@@ -55,27 +55,26 @@ export default function Profile({ user, onClose }) {
   const initials = (profile.display_name || user.email || '?')[0].toUpperCase()
 
   return (
-    <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 px-4">
-      <div className="bg-white rounded-3xl w-full max-w-md shadow-2xl border border-slate-100 overflow-hidden">
-
-        {/* Header */}
-        <div className="bg-gradient-to-r from-indigo-600 to-violet-600 px-6 pt-8 pb-16 text-white relative">
+    <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50 px-4">
+      <div className="card-elevated w-full max-w-md overflow-hidden animate-scaleIn" onClick={e => e.stopPropagation()}>
+        <div className="bg-gradient-to-r from-brand-500 to-brand-700 px-6 pt-8 pb-16 text-white relative">
           <div className="flex justify-between items-start">
             <div>
               <h2 className="text-xl font-bold">My Profile</h2>
-              <p className="text-indigo-200 text-sm mt-0.5">Manage your account details</p>
+              <p className="text-white/70 text-sm mt-0.5">Manage your account details</p>
             </div>
             <button onClick={onClose}
-              className="w-8 h-8 rounded-full bg-white/20 hover:bg-white/30 flex items-center justify-center text-white transition text-sm">
-              ✕
+              className="w-8 h-8 rounded-full bg-white/20 hover:bg-white/30 flex items-center justify-center text-white transition text-sm backdrop-blur-sm">
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+              </svg>
             </button>
           </div>
         </div>
 
-        {/* Avatar — overlaps header */}
         <div className="flex justify-center -mt-12 mb-4 relative z-10">
           <div className="relative">
-            <div className="w-24 h-24 rounded-full border-4 border-white shadow-lg overflow-hidden bg-gradient-to-br from-indigo-400 to-violet-500 flex items-center justify-center">
+            <div className="w-24 h-24 rounded-full border-4 border-white shadow-elevated overflow-hidden bg-gradient-to-br from-brand-400 to-brand-600 flex items-center justify-center">
               {profile.avatar_url ? (
                 <img src={profile.avatar_url} alt="avatar" className="w-full h-full object-cover" />
               ) : (
@@ -84,7 +83,7 @@ export default function Profile({ user, onClose }) {
             </div>
             <button onClick={() => fileRef.current.click()}
               disabled={uploading}
-              className="absolute bottom-0 right-0 w-8 h-8 bg-indigo-600 hover:bg-indigo-500 rounded-full flex items-center justify-center text-white shadow-md transition border-2 border-white">
+              className="absolute bottom-0 right-0 w-8 h-8 bg-brand-500 hover:bg-brand-600 rounded-full flex items-center justify-center text-white shadow-md transition border-2 border-white active:scale-95">
               {uploading ? '⏳' : '📷'}
             </button>
             <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={uploadAvatar} />
@@ -92,54 +91,35 @@ export default function Profile({ user, onClose }) {
         </div>
 
         {loading ? (
-          <div className="text-center py-8 text-slate-400">Loading...</div>
+          <div className="text-center py-8 text-surface-400 font-medium">Loading...</div>
         ) : (
           <form onSubmit={save} className="px-6 pb-6 space-y-4">
-
-            {/* Email — read only */}
             <div>
-              <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Email</label>
-              <div className="mt-1 w-full bg-slate-50 border border-slate-200 text-slate-400 rounded-xl px-4 py-3 text-sm">
-                {user.email}
-              </div>
+              <label className="input-label">Email</label>
+              <div className="input bg-surface-50 text-surface-400 cursor-not-allowed">{user.email}</div>
             </div>
-
-            {/* Display name */}
             <div>
-              <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Display Name</label>
-              <input
-                className="mt-1 w-full bg-slate-50 border border-slate-200 text-slate-800 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-indigo-400 focus:border-transparent transition text-sm"
-                placeholder="Your name"
+              <label className="input-label">Display Name</label>
+              <input className="input" placeholder="Your name"
                 value={profile.display_name}
-                onChange={e => setProfile(p => ({ ...p, display_name: e.target.value }))}
-              />
+                onChange={e => setProfile(p => ({ ...p, display_name: e.target.value }))} />
             </div>
-
-            {/* Mobile */}
             <div>
-              <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Mobile Number</label>
-              <input
-                className="mt-1 w-full bg-slate-50 border border-slate-200 text-slate-800 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-indigo-400 focus:border-transparent transition text-sm"
-                placeholder="+91 98765 43210"
-                type="tel"
+              <label className="input-label">Mobile Number</label>
+              <input className="input" placeholder="+91 98765 43210" type="tel"
                 value={profile.mobile}
-                onChange={e => setProfile(p => ({ ...p, mobile: e.target.value }))}
-              />
+                onChange={e => setProfile(p => ({ ...p, mobile: e.target.value }))} />
             </div>
 
             {msg.text && (
-              <p className={`text-sm font-medium text-center ${msg.type === 'error' ? 'text-red-500' : 'text-green-600'}`}>
-                {msg.type === 'success' ? '✅ ' : '❌ '}{msg.text}
+              <p className={`text-sm font-medium text-center ${msg.type === 'error' ? 'text-accent-red' : 'text-brand-600'}`}>
+                {msg.type === 'success' ? '✓ ' : ''}{msg.text}
               </p>
             )}
 
             <div className="flex gap-3 pt-1">
-              <button type="button" onClick={onClose}
-                className="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 py-3 rounded-2xl font-semibold transition">
-                Cancel
-              </button>
-              <button type="submit" disabled={saving}
-                className="flex-1 bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 text-white py-3 rounded-2xl font-bold transition shadow-lg shadow-indigo-100 disabled:opacity-50">
+              <button type="button" onClick={onClose} className="btn-secondary flex-1">Cancel</button>
+              <button type="submit" disabled={saving} className="btn-primary flex-1">
                 {saving ? 'Saving...' : 'Save Profile'}
               </button>
             </div>

@@ -7,7 +7,6 @@ import SettingsScreen from './components/SettingsScreen'
 
 const SETTINGS_RETURN_KEY = 'tripsplit_settings_return'
 
-// Clean URL router using History API
 function getRoute() {
   let path = window.location.pathname
   if (path.length > 1 && path.endsWith('/')) path = path.slice(0, -1)
@@ -17,13 +16,352 @@ function getRoute() {
   return { page: 'dashboard' }
 }
 
+function AppLayout({
+  children,
+  theme,
+  setTheme,
+  user,
+  profile,
+  searchQuery,
+  setSearchQuery,
+  onSignOut,
+  activeTrip,
+  activeTripTab,
+  setActiveTripTab,
+  goTo,
+  route,
+  onOpenSettings
+}) {
+  const [profileOpen, setProfileOpen] = useState(false)
+  const initials = (profile?.display_name || user?.email || '?')[0].toUpperCase()
+
+  // Sidebar elements
+  const sidebarItems = [
+    { id: 'overview', label: 'Overview', icon: (
+      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5">
+        <path strokeLinecap="round" strokeLinejoin="round" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2H6a2 2 0 01-2-2v-4zM14 16a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2h-2a2 2 0 01-2-2v-4z" />
+      </svg>
+    ), active: route.page === 'dashboard', onClick: () => goTo('/') }
+  ]
+
+  // Add Settings item
+  const settingsItem = { id: 'settings', label: 'Settings', icon: (
+    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5">
+      <path strokeLinecap="round" strokeLinejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+      <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+    </svg>
+  ), active: route.page === 'settings', onClick: () => onOpenSettings(window.location.pathname) }
+
+  // Title of current section
+  let pageTitle = 'Overview'
+  if (route.page === 'settings') pageTitle = 'Settings'
+  else if (route.page === 'trip' && activeTrip) pageTitle = activeTrip.name
+
+  return (
+    <div className="flex min-h-screen bg-surface-50 dark:bg-[#121212] transition-colors duration-300">
+      {/* DESKTOP SIDEBAR */}
+      <aside className="hidden md:flex flex-col w-64 bg-[#1E1E1E] text-white shrink-0 border-r border-[#2D2D2D] p-5 justify-between">
+        <div className="space-y-8">
+          {/* Logo */}
+          <div className="flex items-center gap-3 px-2">
+            <div className="w-9 h-9 rounded-2xl bg-gradient-to-br from-brand-400 to-brand-600 flex items-center justify-center shadow-lg shadow-brand-500/20">
+              <span className="text-base text-white">✈️</span>
+            </div>
+            <span className="text-xl font-black tracking-tight text-white">
+              TRIPSPLIT
+            </span>
+          </div>
+
+          {/* Sidebar Menu */}
+          <nav className="space-y-1.5">
+            {sidebarItems.map(item => (
+              <button
+                key={item.id}
+                onClick={item.onClick}
+                className={`w-full flex items-center gap-3.5 px-4 py-3 rounded-2xl text-sm font-bold transition-all ${
+                  item.active
+                    ? 'bg-[#16B843] text-white shadow-lg shadow-[#16B843]/20'
+                    : 'text-surface-400 hover:text-white hover:bg-white/[0.04]'
+                }`}
+              >
+                <span className={item.active ? 'scale-110' : 'opacity-70'}>{item.icon}</span>
+                <span>{item.label}</span>
+              </button>
+            ))}
+
+            {/* Active Trip Sub-Menu */}
+            {route.page === 'trip' && activeTrip && (
+              <div className="mt-6 pt-6 border-t border-white/[0.06] space-y-4">
+                <div className="px-3 flex items-center gap-2">
+                  <span className="text-lg">{activeTrip.emoji || '🧳'}</span>
+                  <span className="text-xs font-black text-white/40 uppercase tracking-widest truncate">{activeTrip.name}</span>
+                </div>
+                <div className="space-y-1">
+                  {[
+                    { id: 'expenses', label: 'Costs', icon: (
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+                      </svg>
+                    )},
+                    { id: 'summary', label: 'Analytics', icon: (
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 002 2h2a2 2 0 002-2z" />
+                      </svg>
+                    )},
+                    { id: 'members', label: 'Crew', icon: (
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a3 3 0 11-6 0 3 3 0 016 0z" />
+                      </svg>
+                    )},
+                    { id: 'settle', label: 'Transfer', icon: (
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
+                      </svg>
+                    )}
+                  ].map(tab => (
+                    <button
+                      key={tab.id}
+                      onClick={() => setActiveTripTab(tab.id)}
+                      className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-xs font-bold transition-all ${
+                        activeTripTab === tab.id
+                          ? 'bg-white/10 text-white border-l-4 border-[#16B843]'
+                          : 'text-surface-400 hover:text-white hover:bg-white/[0.03]'
+                      }`}
+                    >
+                      <span className={activeTripTab === tab.id ? 'text-[#16B843]' : 'opacity-60'}>{tab.icon}</span>
+                      <span>{tab.label}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+          </nav>
+        </div>
+
+        <div className="space-y-4">
+          <button
+            onClick={settingsItem.onClick}
+            className={`w-full flex items-center gap-3.5 px-4 py-3 rounded-2xl text-sm font-bold transition-all ${
+              settingsItem.active
+                ? 'bg-[#16B843] text-white shadow-lg shadow-[#16B843]/20'
+                : 'text-surface-400 hover:text-white hover:bg-white/[0.04]'
+            }`}
+          >
+            <span className="opacity-70">{settingsItem.icon}</span>
+            <span>{settingsItem.label}</span>
+          </button>
+          
+          <button
+            onClick={onSignOut}
+            className="w-full flex items-center gap-3.5 px-4 py-3 rounded-2xl text-sm font-bold text-[#F63332] hover:bg-[#F63332]/10 transition-all"
+          >
+            <svg className="w-5 h-5 opacity-70" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+            </svg>
+            <span>Logout</span>
+          </button>
+        </div>
+      </aside>
+
+      {/* MAIN CONTAINER */}
+      <div className="flex-1 flex flex-col min-w-0">
+        {/* TOP HEADER */}
+        <header className="bg-white/80 dark:bg-[#1E1E1E]/80 backdrop-blur-xl border-b border-[#EEEEEE] dark:border-[#2D2D2D] py-3.5 px-6 flex justify-between items-center sticky top-0 z-30 transition-colors">
+          {/* Section / Trip Title */}
+          <div className="flex items-center gap-3">
+            {route.page !== 'dashboard' && (
+              <button
+                onClick={() => goTo('/')}
+                className="md:hidden flex h-8 w-8 items-center justify-center rounded-xl bg-surface-100 dark:bg-surface-500 text-surface-400 hover:text-brand-600 transition-all active:scale-95"
+              >
+                <svg className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth={3} viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
+                </svg>
+              </button>
+            )}
+            <h2 className="text-xl md:text-2xl font-black text-surface-500 dark:text-white tracking-tight leading-none truncate max-w-[200px] sm:max-w-xs md:max-w-none">
+              {pageTitle}
+            </h2>
+          </div>
+
+          {/* Search, Tools, Profile */}
+          <div className="flex items-center gap-4">
+            {/* Search Pill */}
+            {route.page === 'dashboard' && (
+              <div className="relative hidden sm:block">
+                <input
+                  type="text"
+                  placeholder="Search trips..."
+                  value={searchQuery}
+                  onChange={e => setSearchQuery(e.target.value)}
+                  className="w-48 md:w-64 bg-[#F9F9F9] dark:bg-[#121212] border border-[#EEEEEE] dark:border-[#2D2D2D] rounded-full py-2 pl-10 pr-4 text-xs font-semibold text-surface-500 dark:text-white outline-none focus:border-[#16B843] focus:ring-1 focus:ring-[#16B843] transition-all placeholder-surface-300 dark:placeholder-surface-400"
+                />
+                <svg className="absolute left-3.5 top-2.5 w-3.5 h-3.5 text-surface-400 dark:text-surface-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="3">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+              </div>
+            )}
+
+            {/* Dark Mode Theme Toggle */}
+            <button
+              onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')}
+              className="flex items-center justify-center w-9 h-9 rounded-xl bg-[#F9F9F9] dark:bg-[#2D2D2D] border border-[#EEEEEE] dark:border-[#3D3D3D] hover:text-[#16B843] dark:hover:text-[#16B843] text-surface-400 dark:text-surface-300 transition-all active:scale-95 shadow-sm"
+              title="Toggle Light/Dark Theme"
+            >
+              {theme === 'light' ? (
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.2">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+                </svg>
+              ) : (
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.2">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707m0-12.728l.707.707m12.728 12.728l.707-.707M12 8a4 4 0 100 8 4 4 0 000-8z" />
+                </svg>
+              )}
+            </button>
+
+            {/* Notifications Alert Bell */}
+            <div className="relative">
+              <button
+                className="flex items-center justify-center w-9 h-9 rounded-xl bg-[#F9F9F9] dark:bg-[#2D2D2D] border border-[#EEEEEE] dark:border-[#3D3D3D] text-surface-400 dark:text-surface-300 transition-all active:scale-95 shadow-sm"
+                title="Notifications"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.2">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                </svg>
+              </button>
+              <span className="absolute top-1 right-1 flex h-2.5 w-2.5">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#F63332] opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-[#F63332]"></span>
+              </span>
+            </div>
+
+            {/* Profile Dropdown */}
+            <div className="relative">
+              <button
+                onClick={() => setProfileOpen(!profileOpen)}
+                className="flex items-center gap-2 bg-[#F9F9F9] dark:bg-[#2D2D2D] hover:bg-surface-100 dark:hover:bg-[#3D3D3D] border border-[#EEEEEE] dark:border-[#3D3D3D] pl-2.5 pr-3 py-1.5 rounded-2xl transition-all active:scale-95 shadow-sm"
+              >
+                <div className="w-7 h-7 rounded-full overflow-hidden bg-gradient-to-br from-brand-400 to-brand-600 flex items-center justify-center text-white text-xs font-black shrink-0 shadow-inner">
+                  {profile?.avatar_url ? (
+                    <img src={profile.avatar_url} alt="" className="w-full h-full object-cover" />
+                  ) : (
+                    initials
+                  )}
+                </div>
+                <span className="text-xs font-bold text-surface-500 dark:text-white hidden md:block max-w-[80px] truncate tracking-tight">
+                  {profile?.display_name || user?.email?.split('@')[0]}
+                </span>
+                <svg className="w-3 h-3 text-surface-400 dark:text-surface-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
+                </svg>
+              </button>
+
+              {profileOpen && (
+                <>
+                  <div className="fixed inset-0 z-40" onClick={() => setProfileOpen(false)} />
+                  <div className="absolute right-0 top-full mt-2 w-48 bg-white dark:bg-[#1E1E1E] border border-[#EEEEEE] dark:border-[#2D2D2D] rounded-2xl shadow-xl py-1.5 z-50 animate-fadeIn origin-top-right">
+                    <div className="px-4 py-2 border-b border-[#EEEEEE] dark:border-[#2D2D2D]">
+                      <p className="text-xs font-black text-surface-300 dark:text-surface-400 uppercase tracking-widest">Logged In As</p>
+                      <p className="text-xs font-bold text-surface-500 dark:text-white truncate mt-0.5">{user?.email}</p>
+                    </div>
+                    <button
+                      onClick={() => { setProfileOpen(false); onOpenSettings(window.location.pathname) }}
+                      className="w-full text-left px-4 py-2.5 text-xs font-bold text-surface-500 dark:text-white hover:bg-brand-50 dark:hover:bg-[#2D2D2D] hover:text-[#16B843] dark:hover:text-[#16B843] transition-colors"
+                    >
+                      Settings Screen
+                    </button>
+                    <button
+                      onClick={() => { setProfileOpen(false); onSignOut() }}
+                      className="w-full text-left px-4 py-2.5 text-xs font-bold text-[#F63332] hover:bg-red-50 dark:hover:bg-[#2D2D2D] transition-colors"
+                    >
+                      Sign Out
+                    </button>
+                  </div>
+                </>
+              )}
+            </div>
+          </div>
+        </header>
+
+        {/* SCREEN SCROLLABLE CONTENT */}
+        <main className="flex-1 overflow-y-auto px-4 md:px-8 py-6 relative">
+          <div className="max-w-6xl mx-auto">
+            {children}
+          </div>
+        </main>
+      </div>
+
+      {/* MOBILE BOTTOM NAVIGATION */}
+      {route.page === 'trip' && activeTrip && (
+        <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white/90 dark:bg-[#1E1E1E]/90 border-t border-[#EEEEEE] dark:border-[#2D2D2D] py-2 px-4 flex justify-around items-center z-30 backdrop-blur-xl">
+          {[
+            { id: 'expenses', label: 'Costs', icon: (
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+              </svg>
+            )},
+            { id: 'summary', label: 'Analytics', icon: (
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 002 2h2a2 2 0 002-2z" />
+              </svg>
+            )},
+            { id: 'members', label: 'Crew', icon: (
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a3 3 0 11-6 0 3 3 0 016 0z" />
+              </svg>
+            )},
+            { id: 'settle', label: 'Transfer', icon: (
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
+              </svg>
+            )}
+          ].map(tab => (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTripTab(tab.id)}
+              className={`flex flex-col items-center gap-0.5 py-1 px-3.5 rounded-xl transition-all ${
+                activeTripTab === tab.id ? 'text-[#16B843] font-black' : 'text-surface-400'
+              }`}
+            >
+              <span>{tab.icon}</span>
+              <span className="text-[9px] uppercase tracking-wider">{tab.label}</span>
+            </button>
+          ))}
+        </nav>
+      )}
+    </div>
+  )
+}
+
 export default function App() {
   const [session, setSession] = useState(undefined)
   const [route, setRoute] = useState(getRoute)
   const [currency, setCurrency] = useState(() => localStorage.getItem('currency') || '₹')
+  const [profile, setProfile] = useState(null)
+  
+  // Theme state
+  const [theme, setTheme] = useState(() => localStorage.getItem('tripsplit_theme') || 'light')
 
   // Invitation redemption states
   const [redeemingInvite, setRedeemingInvite] = useState(false)
+  const [activeTrip, setActiveTrip] = useState(null)
+  const [activeTripTab, setActiveTripTab] = useState('expenses')
+  const [searchQuery, setSearchQuery] = useState('')
+
+  useEffect(() => {
+    if (theme === 'dark') {
+      document.documentElement.classList.add('dark')
+    } else {
+      document.documentElement.classList.remove('dark')
+    }
+    localStorage.setItem('tripsplit_theme', theme)
+  }, [theme])
+
+  const fetchProfile = async (userId) => {
+    if (!userId) return
+    const { data } = await supabase.from('profiles').select('*').eq('id', userId).maybeSingle()
+    if (data) setProfile(data)
+  }
 
   const goTo = (path) => {
     const normalized = path === '/' ? '/' : (path.startsWith('/') ? path : `/${path}`)
@@ -91,6 +429,14 @@ export default function App() {
     return () => subscription.unsubscribe()
   }, [])
 
+  useEffect(() => {
+    if (session?.user) {
+      fetchProfile(session.user.id)
+    } else {
+      setProfile(null)
+    }
+  }, [session])
+
   // Redemption function
   const redeemInvite = async (token) => {
     setRedeemingInvite(true)
@@ -144,10 +490,10 @@ export default function App() {
   // Loading
   if (session === undefined) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-indigo-50 to-violet-50 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-brand-50 to-brand-100 dark:from-neutral-900 dark:to-neutral-800 flex items-center justify-center transition-colors">
         <div className="text-center space-y-3">
-          <div className="text-4xl">✈️</div>
-          <p className="text-slate-400 text-sm">Loading TripSplit...</p>
+          <div className="text-4xl animate-bounce">✈️</div>
+          <p className="text-slate-400 dark:text-slate-500 text-sm font-bold">Loading TripSplit...</p>
         </div>
       </div>
     )
@@ -155,17 +501,17 @@ export default function App() {
 
   if (redeemingInvite) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-violet-50 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-brand-50 via-white to-brand-100 dark:from-neutral-900 dark:via-neutral-800 dark:to-neutral-900 flex items-center justify-center transition-colors">
         <div className="w-full max-w-sm p-8 text-center space-y-4">
           <div className="text-5xl animate-bounce">🎫</div>
-          <h3 className="text-2xl font-black text-slate-800 bg-gradient-to-r from-indigo-600 to-violet-600 bg-clip-text text-transparent">
+          <h3 className="text-2xl font-black text-surface-500 dark:text-white">
             Redeeming Ticket...
           </h3>
-          <p className="text-slate-500 text-sm">
+          <p className="text-slate-500 dark:text-slate-400 text-sm font-semibold">
             We are validating your invitation and adding you to the trip. Please wait a moment.
           </p>
-          <div className="w-16 h-1.5 bg-slate-100 rounded-full mx-auto overflow-hidden relative">
-            <div className="absolute top-0 bottom-0 bg-indigo-600 rounded-full animate-pulse w-full" />
+          <div className="w-16 h-1.5 bg-slate-100 dark:bg-neutral-700 rounded-full mx-auto overflow-hidden relative">
+            <div className="absolute top-0 bottom-0 bg-brand-500 rounded-full animate-pulse w-full" />
           </div>
         </div>
       </div>
@@ -174,38 +520,64 @@ export default function App() {
 
   if (!session) return <Auth />
 
-  // Routed pages
+  // Render Routed components inside global layout
+  let content = null
+
   if (route.page === 'settings') {
-    return (
+    content = (
       <SettingsScreen
         user={session.user}
         currency={currency}
         onCurrencyChange={handleCurrencyChange}
         onBack={closeSettings}
         onSignOut={handleSignOut}
+        onProfileUpdated={() => fetchProfile(session.user.id)}
       />
     )
-  }
-
-  if (route.page === 'trip' && route.tripId) {
-    return (
+  } else if (route.page === 'trip' && route.tripId) {
+    content = (
       <TripView
         tripId={route.tripId}
         user={session.user}
         currency={currency}
-        onBack={() => goTo('/')}
+        activeTab={activeTripTab}
+        setActiveTab={setActiveTripTab}
+        onBack={() => { setActiveTrip(null); goTo('/') }}
         onOpenSettings={() => openSettings(`/trip/${route.tripId}`)}
+        onTripLoaded={(t) => setActiveTrip(t)}
+      />
+    )
+  } else {
+    content = (
+      <Dashboard
+        user={session.user}
+        currency={currency}
+        searchQuery={searchQuery}
+        onCurrencyChange={handleCurrencyChange}
+        onSelectTrip={(id) => goTo(`/trip/${id}`)}
+        onOpenSettings={() => openSettings('/')}
+        profile={profile}
       />
     )
   }
 
   return (
-    <Dashboard
+    <AppLayout
+      theme={theme}
+      setTheme={setTheme}
       user={session.user}
-      currency={currency}
-      onCurrencyChange={handleCurrencyChange}
-      onSelectTrip={(id) => goTo(`/trip/${id}`)}
-      onOpenSettings={() => openSettings('/')}
-    />
+      profile={profile}
+      searchQuery={searchQuery}
+      setSearchQuery={setSearchQuery}
+      onSignOut={handleSignOut}
+      activeTrip={activeTrip}
+      activeTripTab={activeTripTab}
+      setActiveTripTab={setActiveTripTab}
+      goTo={goTo}
+      route={route}
+      onOpenSettings={openSettings}
+    >
+      {content}
+    </AppLayout>
   )
 }

@@ -9,85 +9,133 @@ export default function Auth() {
   const [showPassword, setShowPassword] = useState(false)
   const [msg, setMsg] = useState('')
   const [msgType, setMsgType] = useState('info')
+  const [loading, setLoading] = useState(false)
 
   const handle = async (e) => {
     e.preventDefault()
     setMsg('')
+    setLoading(true)
 
-    if (isSignUp) {
-      const { data, error } = await supabase.auth.signUp({ email, password })
-      if (error) { setMsg(error.message); setMsgType('error'); return }
+    try {
+      if (isSignUp) {
+        const { data, error } = await supabase.auth.signUp({ email, password })
+        if (error) { setMsg(error.message); setMsgType('error'); setLoading(false); return }
 
-      // Save display name to profiles table
-      if (data?.user) {
-        await supabase.from('profiles').upsert({
-          id: data.user.id,
-          display_name: displayName.trim(),
-          updated_at: new Date().toISOString(),
-        })
-      }
-
-      setMsg('Account created! You can now sign in.')
-      setMsgType('info')
-      setIsSignUp(false)
-    } else {
-      const { data, error } = await supabase.auth.signInWithPassword({ email, password })
-      if (error) { setMsg(error.message); setMsgType('error'); return }
-
-      // Ensure profile exists for existing users
-      if (data?.user) {
-        const { data: profile } = await supabase.from('profiles').select('id').eq('id', data.user.id).maybeSingle()
-        if (!profile) {
+        if (data?.user) {
           await supabase.from('profiles').upsert({
             id: data.user.id,
-            display_name: email.split('@')[0],
+            display_name: displayName.trim(),
             updated_at: new Date().toISOString(),
           })
         }
+
+        setMsg('Account created successfully! You can now sign in.')
+        setMsgType('success')
+        setIsSignUp(false)
+      } else {
+        const { data, error } = await supabase.auth.signInWithPassword({ email, password })
+        if (error) { setMsg(error.message); setMsgType('error'); setLoading(false); return }
+
+        if (data?.user) {
+          const { data: profile } = await supabase.from('profiles').select('id').eq('id', data.user.id).maybeSingle()
+          if (!profile) {
+            await supabase.from('profiles').upsert({
+              id: data.user.id,
+              display_name: email.split('@')[0],
+              updated_at: new Date().toISOString(),
+            })
+          }
+        }
       }
+    } catch (err) {
+      console.error(err)
+      setMsg('Something went wrong. Please try again.')
+      setMsgType('error')
+    } finally {
+      setLoading(false)
     }
   }
 
-  const inputCls = 'mt-1 w-full bg-slate-50 border border-slate-200 text-slate-800 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-indigo-400 focus:border-transparent transition'
-
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-violet-50 flex items-center justify-center px-4">
-      <div className="w-full max-w-sm">
-        <div className="text-center mb-8">
-          <div className="text-5xl mb-3">✈️</div>
-          <h1 className="text-3xl font-bold bg-gradient-to-r from-indigo-600 to-violet-600 bg-clip-text text-transparent">
+    <div className="min-h-screen bg-gradient-to-br from-[#F9F9F9] via-[#EEEEEE] to-[#F9F9F9] dark:from-[#121212] dark:via-[#1C1C1C] dark:to-[#121212] flex items-center justify-center px-4 relative overflow-hidden transition-colors duration-300">
+      
+      {/* Dynamic Background Glowing Orbs */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute -top-40 -right-40 w-96 h-96 rounded-full bg-[#16B843]/10 dark:bg-[#16B843]/15 blur-3xl animate-pulse duration-4000" />
+        <div className="absolute -bottom-40 -left-40 w-96 h-96 rounded-full bg-[#B1EBC1]/10 dark:bg-[#B1EBC1]/5 blur-3xl animate-pulse duration-6000" />
+      </div>
+
+      <div className="w-full max-w-md relative z-10 space-y-6">
+        
+        {/* Logo/Branding Block */}
+        <div className="text-center">
+          <div className="w-14 h-14 mx-auto mb-3 bg-gradient-to-br from-[#16B843] to-green-700 rounded-[1.25rem] flex items-center justify-center shadow-lg shadow-[#16B843]/20">
+            <span className="text-2xl drop-shadow">✈️</span>
+          </div>
+          <h1 className="text-3xl font-black text-surface-500 dark:text-white tracking-tight leading-none">
             TripSplit
           </h1>
-          <p className="text-slate-500 text-sm mt-1">Split expenses with your travel crew</p>
+          <p className="text-xs font-bold text-[#808080] mt-1.5 uppercase tracking-widest">
+            Travel ledgers & expense sharing
+          </p>
         </div>
 
-        <div className="bg-white rounded-3xl shadow-xl shadow-slate-200 border border-slate-100 p-8">
-          <h2 className="text-xl font-bold text-slate-800 mb-6">
-            {isSignUp ? 'Create account' : 'Welcome back'}
-          </h2>
+        {/* Auth Credentials Card */}
+        <div className="bg-white dark:bg-[#1E1E1E] p-8 rounded-[2.25rem] border border-[#EEEEEE] dark:border-[#2D2D2D] shadow-2xl relative">
+          
+          <div className="mb-6">
+            <h2 className="text-lg font-black text-surface-500 dark:text-white tracking-tight">
+              {isSignUp ? 'Create your profile' : 'Sign in to dashboard'}
+            </h2>
+            <p className="text-[10px] font-bold text-[#808080] uppercase tracking-widest mt-0.5">
+              {isSignUp ? 'Join your travel buddies' : 'Welcome back, traveller'}
+            </p>
+          </div>
 
           <form onSubmit={handle} className="space-y-4">
+            
             {isSignUp && (
               <div>
-                <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Your Name</label>
-                <input className={inputCls} type="text" placeholder="John Doe"
-                  value={displayName} onChange={e => setDisplayName(e.target.value)} required />
+                <label className="input-label">Display Name</label>
+                <input
+                  className="input"
+                  type="text"
+                  placeholder="e.g. John Doe"
+                  value={displayName}
+                  onChange={e => setDisplayName(e.target.value)}
+                  required
+                />
               </div>
             )}
+            
             <div>
-              <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Email</label>
-              <input className={inputCls} type="email" placeholder="you@example.com"
-                value={email} onChange={e => setEmail(e.target.value)} required />
+              <label className="input-label">Email Address</label>
+              <input
+                className="input"
+                type="email"
+                placeholder="you@domain.com"
+                value={email}
+                onChange={e => setEmail(e.target.value)}
+                required
+              />
             </div>
+            
             <div>
-              <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Password</label>
+              <label className="input-label">Password</label>
               <div className="relative">
-                <input className={inputCls + " pr-12"} type={showPassword ? "text" : "password"} placeholder="Min. 6 characters"
-                  value={password} onChange={e => setPassword(e.target.value)} required minLength={6} />
+                <input
+                  className="input pr-11"
+                  type={showPassword ? "text" : "password"}
+                  placeholder="Min. 6 characters"
+                  value={password}
+                  onChange={e => setPassword(e.target.value)}
+                  required
+                  minLength={6}
+                />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute inset-y-0 right-0 px-4 mt-1 flex items-center text-slate-400 hover:text-indigo-500 transition-colors"
+                  className="absolute inset-y-0 right-0 px-3.5 flex items-center text-surface-300 hover:text-[#16B843] transition-colors"
                 >
                   {showPassword ? (
                     <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -102,22 +150,37 @@ export default function Auth() {
                 </button>
               </div>
             </div>
-            <button className="w-full bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 text-white font-bold py-3 rounded-xl transition shadow-lg shadow-indigo-200 mt-2">
-              {isSignUp ? 'Create Account' : 'Sign In'}
+            
+            <button
+              type="submit"
+              disabled={loading}
+              className="btn-primary w-full mt-2 shadow-lg shadow-[#16B843]/15 flex items-center justify-center gap-1.5"
+            >
+              {loading ? (
+                <>
+                  <span className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  <span>Processing...</span>
+                </>
+              ) : (
+                <span>{isSignUp ? 'Create Profile' : 'Access Account'}</span>
+              )}
             </button>
           </form>
 
           {msg && (
-            <p className={`text-sm mt-4 text-center font-medium ${msgType === 'error' ? 'text-red-500' : 'text-indigo-600'}`}>
+            <p className={`text-xs mt-4 text-center font-black ${msgType === 'error' ? 'text-[#F63332]' : 'text-[#16B843]'}`}>
               {msg}
             </p>
           )}
 
-          <p className="text-slate-400 text-sm text-center mt-5">
-            {isSignUp ? 'Already have an account?' : "Don't have an account?"}
-            <button className="text-indigo-600 font-semibold ml-1 hover:underline"
-              onClick={() => { setIsSignUp(!isSignUp); setMsg(''); setDisplayName('') }}>
-              {isSignUp ? 'Sign In' : 'Sign Up'}
+          <p className="text-surface-300 dark:text-[#808080] text-xs text-center mt-5 font-bold">
+            {isSignUp ? 'Already have an account?' : "First time using TripSplit?"}
+            <button
+              type="button"
+              className="text-[#16B843] font-black ml-1 hover:text-green-700 transition-colors uppercase tracking-wider text-[10px]"
+              onClick={() => { setIsSignUp(!isSignUp); setMsg(''); setDisplayName('') }}
+            >
+              {isSignUp ? 'Sign In' : 'Register Now'}
             </button>
           </p>
         </div>
