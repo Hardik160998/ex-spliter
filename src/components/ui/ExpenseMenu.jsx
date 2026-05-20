@@ -21,10 +21,10 @@ export default function ExpenseMenu({ canEdit, canDelete, onEdit, onDelete }) {
   const showSeparator = canEdit && canDelete
 
   return (
-    <div className="relative" ref={ref}>
+    <div className="relative rounded-md bg-gray-100 text-gray-700 border border-gray-200 shadow-sm" ref={ref}>
       <button
         onClick={(e) => { e.stopPropagation(); setOpen(!open) }}
-        className="shrink-0 p-2 text-slate-300 hover:text-indigo-600 hover:bg-indigo-50 rounded-xl transition-all active:scale-90"
+        className="shrink-0 p-2 text-slate-500 hover:text-indigo-600 hover:bg-indigo-50 rounded-xl transition-all active:scale-90"
         aria-label="Expense actions"
       >
         <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
