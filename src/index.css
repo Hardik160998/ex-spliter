@@ -37,7 +37,7 @@
   .card {
     background-color: #fff;
     border-radius: 1.25rem;
-    border: 1px solid #EEEEEE;
+    border: 1px solid #E8ECF0;
     box-shadow: 0 4px 16px rgba(0,0,0,0.02), 0 1px 4px rgba(0,0,0,0.01);
     transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
   }
@@ -57,7 +57,7 @@
     background: rgba(255, 255, 255, 0.7);
     backdrop-filter: blur(16px);
     -webkit-backdrop-filter: blur(16px);
-    border: 1px solid rgba(238, 238, 238, 0.6);
+    border: 1px solid rgba(232, 236, 240, 0.6);
     border-radius: 1.25rem;
     transition: all 0.25s ease;
   }
@@ -68,8 +68,8 @@
   
   .card-elevated {
     background-color: #fff;
-    border-radius: 1.25rem;
-    border: 1px solid #EEEEEE;
+    border-radius: 1rem;
+    border: 1px solid #E8ECF0;
     box-shadow: 0 12px 40px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.02);
   }
   .dark .card-elevated {
@@ -252,78 +252,224 @@
       scrollbar-width: none !important;
     }
   }
+}
 
-  .text-display {
+/* ════════════════════════════════════════════
+   TYPOGRAPHY SYSTEM — TripSplit Design Language
+   ════════════════════════════════════════════
+   Font: Plus Jakarta Sans (primary), Inter (fallback)
+   Scale: 10 / 12 / 13 / 14 / 16 / 18 / 20 / 24 / 30 / 36 / 48
+   Weights: 500 (medium) / 600 (semibold) / 700 (bold) / 800 (extrabold) / 900 (black)
+   ════════════════════════════════════════════ */
+
+@layer components {
+  /* ---- Hero / Display ---- */
+  .typo-hero {
+    font-size: 1.75rem;
+    font-weight: 900;
+    line-height: 1.15;
+    letter-spacing: -0.03em;
+    color: #1E1E1E;
+  }
+  @screen sm { .typo-hero { font-size: 2.25rem; } }
+  @screen lg { .typo-hero { font-size: 2.75rem; } }
+  .dark .typo-hero { color: #F9F9F9; }
+
+  .typo-h1 {
     font-size: 1.5rem;
-    font-weight: 700;
+    font-weight: 900;
+    line-height: 1.2;
     letter-spacing: -0.025em;
     color: #1E1E1E;
   }
-  .dark .text-display {
-    color: #F9F9F9;
+  @screen sm { .typo-h1 { font-size: 1.875rem; } }
+  .dark .typo-h1 { color: #F9F9F9; }
+
+  .typo-h2 {
+    font-size: 1.25rem;
+    font-weight: 800;
+    line-height: 1.25;
+    letter-spacing: -0.025em;
+    color: #1E1E1E;
   }
-  
-  .text-heading {
+  @screen sm { .typo-h2 { font-size: 1.5rem; } }
+  .dark .typo-h2 { color: #F9F9F9; }
+
+  .typo-h3 {
     font-size: 1.125rem;
-    font-weight: 700;
-    letter-spacing: -0.025em;
+    font-weight: 800;
+    line-height: 1.3;
+    letter-spacing: -0.02em;
     color: #1E1E1E;
   }
-  .dark .text-heading {
-    color: #F9F9F9;
+  @screen sm { .typo-h3 { font-size: 1.25rem; } }
+  .dark .typo-h3 { color: #F9F9F9; }
+
+  .typo-h4 {
+    font-size: 0.9375rem;
+    font-weight: 700;
+    line-height: 1.35;
+    letter-spacing: -0.01em;
+    color: #1E1E1E;
   }
-  
-  .text-subheading {
-    font-size: 1rem;
-    font-weight: 600;
-    color: #808080;
-  }
-  .dark .text-subheading {
-    color: #CCCCCC;
-  }
-  
-  .text-body {
+  .dark .typo-h4 { color: #F9F9F9; }
+
+  /* ---- Body / Reading ---- */
+  .typo-body {
     font-size: 0.875rem;
     font-weight: 500;
+    line-height: 1.5;
     color: #808080;
   }
-  .dark .text-body {
-    color: #CCCCCC;
-  }
-  
-  .text-caption {
-    font-size: 0.75rem;
+  .dark .typo-body { color: #CCCCCC; }
+
+  .typo-body-sm {
+    font-size: 0.8125rem;
     font-weight: 500;
+    line-height: 1.45;
     color: #808080;
   }
-  .dark .text-caption {
-    color: #808080;
-  }
-  
-  .text-label {
-    font-size: 0.625rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-    color: #808080;
-  }
-  .dark .text-label {
-    color: #CCCCCC;
-  }
-  
-  .text-financial {
+  .dark .typo-body-sm { color: #CCCCCC; }
+
+  /* ---- Financial / Numeric ---- */
+  .typo-finance {
     font-weight: 700;
     font-variant-numeric: tabular-nums;
-    letter-spacing: -0.025em;
+    letter-spacing: -0.02em;
+    line-height: 1.1;
   }
-  
-  .text-financial-lg {
+
+  .typo-finance-lg {
     font-size: 1.25rem;
     font-weight: 900;
     font-variant-numeric: tabular-nums;
     letter-spacing: -0.025em;
+    line-height: 1.1;
+  }
+  @screen sm { .typo-finance-lg { font-size: 1.5rem; } }
+
+  .typo-finance-xl {
+    font-size: 1.75rem;
+    font-weight: 900;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.03em;
+    line-height: 1.05;
+  }
+  @screen sm { .typo-finance-xl { font-size: 2.25rem; } }
+  @screen lg { .typo-finance-xl { font-size: 2.75rem; } }
+
+  .typo-finance-hero {
+    font-size: 2.5rem;
+    font-weight: 900;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.035em;
+    line-height: 1;
+  }
+  @screen sm { .typo-finance-hero { font-size: 3.5rem; } }
+  @screen lg { .typo-finance-hero { font-size: 4rem; } }
+
+  /* ---- Labels / Metadata ---- */
+  .typo-label {
+    font-size: 0.625rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    line-height: 1.2;
+    color: #808080;
+  }
+  .dark .typo-label { color: #CCCCCC; }
+
+  .typo-label-sm {
+    font-size: 0.5625rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    line-height: 1.2;
+    color: #808080;
+  }
+  .dark .typo-label-sm { color: #808080; }
+
+  .typo-meta {
+    font-size: 0.6875rem;
+    font-weight: 600;
+    line-height: 1.3;
+    color: #808080;
+  }
+  .dark .typo-meta { color: #808080; }
+
+  .typo-caption {
+    font-size: 0.75rem;
+    font-weight: 500;
+    line-height: 1.4;
+    color: #808080;
+  }
+  .dark .typo-caption { color: #808080; }
+
+  /* ---- Stat / Metric Values ---- */
+  .typo-stat {
+    font-size: 1.125rem;
+    font-weight: 900;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.02em;
+    line-height: 1;
+  }
+  @screen sm { .typo-stat { font-size: 1.375rem; } }
+
+  .typo-stat-sm {
+    font-size: 0.9375rem;
+    font-weight: 800;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.015em;
+    line-height: 1;
   }
 
+  /* ---- Navigation / Tabs ---- */
+  .typo-nav {
+    font-size: 0.8125rem;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    line-height: 1;
+  }
+
+  .typo-tab {
+    font-size: 0.625rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    line-height: 1;
+  }
+  @screen sm { .typo-tab { font-size: 0.6875rem; } }
+
+  /* ---- Badges / Chips ---- */
+  .typo-badge {
+    font-size: 0.5625rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    line-height: 1;
+  }
+
+  /* ---- Buttons ---- */
+  .typo-btn {
+    font-size: 0.8125rem;
+    font-weight: 700;
+    letter-spacing: 0.01em;
+    line-height: 1;
+  }
+  .typo-btn-sm {
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.01em;
+    line-height: 1;
+  }
+
+  /* ---- Currency prefix ---- */
+  .typo-currency {
+    font-weight: 700;
+    color: #16B843;
+  }
+
+  /* ---- Skeleton loading ---- */
   .skeleton {
     background-color: #EEEEEE;
     border-radius: 0.75rem;

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+﻿import { useState, useEffect } from 'react'
 import { supabase } from '../supabaseClient'
 import ExpenseForm from './ExpenseForm'
 import AddMemberModal from './AddMemberModal'
@@ -99,8 +99,8 @@ function SettleTab({ settlements, members, expenses, user, fmt, total }) {
       </div>
 
       {/* Ledger list of paid balances */}
-      <div className="card overflow-hidden p-0 border border-[#EEEEEE] dark:border-[#2D2D2D]">
-        <div className="px-5 py-4 border-b border-[#EEEEEE] dark:border-[#2D2D2D] bg-[#F9F9F9] dark:bg-[#1C1C1C]">
+      <div className="card overflow-hidden p-0 border border-[#E8ECF0] dark:border-[#2D2D2D]">
+        <div className="px-5 py-4 border-b border-[#E8ECF0] dark:border-[#2D2D2D] bg-[#F9F9F9] dark:bg-[#1C1C1C]">
           <p className="text-[10px] font-black text-surface-400 dark:text-surface-300 uppercase tracking-widest">Billing Breakdown</p>
         </div>
         {members.map((m, idx) => {
@@ -109,7 +109,7 @@ function SettleTab({ settlements, members, expenses, user, fmt, total }) {
           const isYou = m.user_id === user.id
           const pct = total > 0 ? (paid / total) * 100 : 0
           return (
-            <div key={m.id} className="px-5 py-4 border-b border-[#EEEEEE] dark:border-[#2D2D2D] last:border-0 hover:bg-[#F9F9F9]/50 dark:hover:bg-[#2D2D2D]/30 transition-colors">
+            <div key={m.id} className="px-5 py-4 border-b border-[#E8ECF0] dark:border-[#2D2D2D] last:border-0 hover:bg-[#F9F9F9]/50 dark:hover:bg-[#2D2D2D]/30 transition-colors">
               <div className="flex justify-between items-center mb-3">
                 <div className="flex items-center gap-3 min-w-0 pr-3">
                   <div className={`w-9 h-9 shrink-0 rounded-2xl bg-gradient-to-br ${MEMBER_COLORS[idx % MEMBER_COLORS.length]} flex items-center justify-center text-white font-black text-sm shadow-md`}>
@@ -139,7 +139,7 @@ function SettleTab({ settlements, members, expenses, user, fmt, total }) {
       <div className="pt-2">
         <p className="text-[10px] font-black text-[#808080] uppercase tracking-widest mb-3 px-1">Active Transfers Ledger</p>
         {settlements.length === 0 ? (
-          <div className="card p-12 text-center border border-[#EEEEEE] dark:border-[#2D2D2D]">
+          <div className="card p-12 text-center border border-[#E8ECF0] dark:border-[#2D2D2D]">
             <div className="text-4xl mb-3">🎉</div>
             <p className="text-surface-500 dark:text-white font-black text-lg">All settled up!</p>
             <p className="text-surface-400 dark:text-surface-400 text-xs mt-1.5 font-bold uppercase tracking-wider">No pending dues.</p>
@@ -148,7 +148,7 @@ function SettleTab({ settlements, members, expenses, user, fmt, total }) {
           const fromMe = isMe(s.from)
           const toMe = isMe(s.to)
           return (
-            <div key={i} className={`card p-4 mb-3 flex items-center justify-between border border-[#EEEEEE] dark:border-[#2D2D2D] transition-all hover:-translate-y-0.5 ${
+            <div key={i} className={`card p-4 mb-3 flex items-center justify-between border border-[#E8ECF0] dark:border-[#2D2D2D] transition-all hover:-translate-y-0.5 ${
               fromMe ? 'border-red-200/50 bg-[#F63332]/5' : toMe ? 'border-green-200/50 bg-[#16B843]/5' : 'bg-white dark:bg-[#1E1E1E]'
             }`}>
               <div className="flex items-center gap-3.5 min-w-0 pr-3">
@@ -216,8 +216,8 @@ export default function TripView({ tripId, user, currency, activeTab, setActiveT
   }, [tripId])
 
   const baseCurrency = trip?.base_currency || '₹'
-  const { convert, loading: ratesLoading } = useCurrencyRates(baseCurrency)
-  const fmt = (n) => `${currency}${convert(n, currency).toFixed(2)}`
+  const { convert, loading: ratesLoading } = useCurrencyRates()
+  const fmt = (n) => `${currency}${convert(n, baseCurrency, currency).toFixed(2)}`
 
   const total = expenses.reduce((s, e) => s + Number(e.amount), 0)
   
@@ -282,72 +282,74 @@ export default function TripView({ tripId, user, currency, activeTab, setActiveT
   return (
     <div className="space-y-6">
       
-      {/* PREMIUM STATS BANNER */}
-      <div className={`relative overflow-hidden rounded-[2rem] p-6 text-white shadow-2xl border ${
+      {/* TRIP DETAILS HERO */}
+      <div className={`relative overflow-hidden rounded-2xl border ${
         isActive 
-          ? 'bg-gradient-to-br from-[#1E1E1E] via-[#2A2A2A] to-[#121212] border-[#2D2D2D]' 
-          : 'bg-gradient-to-br from-neutral-800 to-neutral-900 border-neutral-700'
+          ? 'bg-[#FFFFFF] border-[#E8ECF0] dark:bg-green-950/30 dark:border-green-900/50' 
+          : 'bg-[#F5F5F0] border-[#E0E0D8] dark:bg-neutral-900/50 dark:border-neutral-800'
       }`}>
-        {/* Glow Accent */}
-        <div className="absolute top-0 right-0 w-32 h-32 bg-[#16B843]/10 rounded-full blur-3xl" />
-        
-        {/* Trip Metadata Header */}
-        <div className="flex justify-between items-start mb-6">
-          <div className="space-y-2">
-            <span className={`inline-flex items-center gap-1.5 text-[9px] font-black px-2.5 py-1 rounded-full uppercase tracking-widest ${
-              isActive ? 'bg-[#DAF7E2]/15 text-[#16B843]' : 'bg-white/10 text-white/50'
-            }`}>
-              <span className={`w-1.5 h-1.5 rounded-full ${isActive ? 'bg-[#16B843] animate-pulse' : 'bg-surface-400'}`} />
-              {isActive ? 'Active Billing' : 'Closed Ledger'}
-            </span>
-            <div>
-              <h1 className="text-2xl sm:text-4xl font-black text-white tracking-tight flex items-center gap-2">
-                <span>{trip?.emoji || '✈️'}</span>
-                <span>{trip?.name}</span>
-              </h1>
-              <p className="text-[#808080] text-xs font-bold uppercase tracking-widest mt-1">
-                Created: {new Date(trip?.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
-              </p>
+        <div className="h-1 w-full bg-gradient-to-r from-[#16B843] via-emerald-400 to-[#16B843]" />
+
+        <div className="p-5 sm:p-6 space-y-5">
+          <div className="flex justify-between items-start gap-4">
+            <div className="flex items-center gap-3 min-w-0">
+              <div className="w-12 h-12 rounded-xl bg-white dark:bg-[#1E1E1E] flex items-center justify-center text-2xl shadow-sm border border-[#E8ECF0] dark:border-[#2D2D2D] shrink-0">
+                {trip?.emoji || '✈️'}
+              </div>
+              <div className="min-w-0 space-y-1">
+                <span className={`inline-flex items-center gap-1.5 typo-badge px-2.5 py-1 rounded-full ${
+                  isActive ? 'bg-[#16B843] text-white' : 'bg-surface-100 text-surface-400 dark:bg-neutral-800 dark:text-neutral-400'
+                }`}>
+                  <span className={`w-1.5 h-1.5 rounded-full ${isActive ? 'bg-white animate-pulse' : 'bg-surface-400'}`} />
+                  {isActive ? 'Active' : 'Closed'}
+                </span>
+                <h1 className="typo-h1 truncate">
+                  {trip?.name}
+                </h1>
+                <p className="typo-label-sm text-[#808080]">
+                  Created {new Date(trip?.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
+                </p>
+              </div>
             </div>
+
+            {baseCurrency !== currency && !ratesLoading && (
+              <span className="shrink-0 text-[10px] bg-white dark:bg-[#1E1E1E] text-surface-500 dark:text-white px-3 py-1.5 rounded-full font-black border border-[#E8ECF0] dark:border-[#2D2D2D] shadow-sm flex items-center gap-1">
+                {baseCurrency}
+                <svg className="w-3 h-3 text-[#16B843]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                </svg>
+                {currency}
+              </span>
+            )}
           </div>
 
-          {baseCurrency !== currency && !ratesLoading && (
-            <span className="text-[10px] bg-white/5 text-white/95 px-3 py-1.5 rounded-full font-black border border-white/10 shadow-sm flex items-center gap-1">
-              {baseCurrency}
-              <svg className="w-3 h-3 text-[#16B843]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" />
-              </svg>
-              {currency}
-            </span>
-          )}
-        </div>
-
-        {/* Dynamic total spent showcase */}
-        <div className="flex flex-col">
-          <span className="text-[#808080] text-[9px] font-black uppercase tracking-widest">Total Spent Ledger</span>
-          <p className="text-3xl sm:text-5xl font-black tracking-tight text-white flex items-baseline gap-1.5 mt-1.5 tabular-nums">
-            <span className="text-lg sm:text-2xl font-bold text-[#16B843]">{currency}</span>
-            {convert(total, currency).toFixed(2)}
-          </p>
-        </div>
-
-        {/* 3 Grid Statistics Mini cards */}
-        <div className="grid grid-cols-3 gap-3 mt-6 border-t border-white/[0.06] pt-5">
-          {[
-            { label: 'Costs Logged', value: expenses.length },
-            { label: 'Contributors', value: members.length },
-            { label: 'Categories', value: Object.keys(byCategory).length }
-          ].map((stat) => (
-            <div key={stat.label} className="bg-white/5 border border-white/10 rounded-2xl p-3 text-center">
-              <p className="text-xl sm:text-2xl font-black text-white tabular-nums tracking-tight">{stat.value}</p>
-              <p className="text-[#808080] text-[8px] font-black mt-1 uppercase tracking-widest truncate">{stat.label}</p>
+          <div className="flex flex-col sm:flex-row sm:items-end gap-4 sm:gap-6">
+            <div className="flex-1">
+              <span className="typo-label">Total Spent</span>
+              <p className="typo-finance-xl text-[#1E1E1E] dark:text-white flex items-baseline gap-1.5 mt-1">
+                <span className="typo-currency text-lg sm:text-xl">{currency}</span>
+                {convert(total, baseCurrency, currency).toFixed(2)}
+              </p>
             </div>
-          ))}
+
+            <div className="grid grid-cols-3 gap-2 sm:gap-3">
+              {[
+                { label: 'Costs', value: expenses.length },
+                { label: 'Crew', value: members.length },
+                { label: 'Categories', value: Object.keys(byCategory).length }
+              ].map((stat) => (
+                <div key={stat.label} className="bg-white dark:bg-[#1E1E1E] rounded-xl px-3 py-2.5 sm:px-4 sm:py-3 text-center border border-[#E8ECF0] dark:border-[#2D2D2D] shadow-sm">
+                  <p className="typo-stat text-[#16B843]">{stat.value}</p>
+                  <p className="typo-label-sm text-surface-300 dark:text-surface-400 mt-0.5">{stat.label}</p>
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
       </div>
 
       {/* CONTEXTUAL ACTION STRIP */}
-      <div className="flex justify-between items-center gap-3 border-b border-[#EEEEEE] dark:border-[#2D2D2D] pb-3.5 mt-4">
+      <div className="flex justify-between items-center gap-3 border-b border-[#E8ECF0] dark:border-[#2D2D2D] pb-3.5 mt-4">
         <div>
           <h3 className="text-lg font-black text-surface-500 dark:text-white leading-none capitalize">
             {activeTab === 'expenses' && 'Expenses Ledger'}
@@ -397,7 +399,7 @@ export default function TripView({ tripId, user, currency, activeTab, setActiveT
       </div>
 
       {/* MOBILE TABS (only shows when not in desktop layout, for quick mobile changes) */}
-      <div className="md:hidden flex bg-[#EEEEEE] dark:bg-[#1E1E1E] p-1 rounded-2xl border border-[#EEEEEE] dark:border-[#2D2D2D] shadow-sm">
+      <div className="md:hidden flex bg-[#EEEEEE] dark:bg-[#1E1E1E] p-1 rounded-2xl border border-[#E8ECF0] dark:border-[#2D2D2D] shadow-sm">
         {[
           { id: 'expenses', label: 'Costs' },
           { id: 'summary', label: 'Chart' },
@@ -425,7 +427,7 @@ export default function TripView({ tripId, user, currency, activeTab, setActiveT
         {activeTab === 'expenses' && (
           <div className="space-y-4">
             {expenses.length === 0 ? (
-              <div className="text-center py-16 card bg-white dark:bg-[#1E1E1E] border border-[#EEEEEE] dark:border-[#2D2D2D] p-10">
+              <div className="text-center py-16 card bg-white dark:bg-[#1E1E1E] border border-[#E8ECF0] dark:border-[#2D2D2D] p-10">
                 <div className="w-20 h-20 bg-brand-50 dark:bg-green-950/20 rounded-[2rem] flex items-center justify-center text-4xl mx-auto mb-4 shadow-inner">
                   🧾
                 </div>
@@ -448,7 +450,7 @@ export default function TripView({ tripId, user, currency, activeTab, setActiveT
                   const paidLabel = isMe ? 'You' : (payer?.display_name || 'Unknown')
 
                   return (
-                    <div key={exp.id} className="card overflow-hidden group active:scale-[0.99] p-0 border border-[#EEEEEE] dark:border-[#2D2D2D] bg-white dark:bg-[#1E1E1E]">
+                    <div key={exp.id} className="card overflow-hidden group active:scale-[0.99] p-0 border border-[#E8ECF0] dark:border-[#2D2D2D] bg-white dark:bg-[#1E1E1E]">
                       <div className="p-5">
                         <div className="flex items-center gap-3">
                           <div className={`w-11 h-11 rounded-2xl flex items-center justify-center text-lg shrink-0 ${style.bg}`}>
@@ -470,7 +472,7 @@ export default function TripView({ tripId, user, currency, activeTab, setActiveT
                           />
                         </div>
 
-                        <div className="mt-4 flex items-baseline justify-between border-t border-[#EEEEEE] dark:border-[#2D2D2D] pt-3.5">
+                        <div className="mt-4 flex items-baseline justify-between border-t border-[#E8ECF0] dark:border-[#2D2D2D] pt-3.5">
                           <div className="flex items-center gap-1.5 text-xs font-bold text-surface-400 dark:text-surface-300">
                             <span className="truncate max-w-[80px]" title={paidLabel}>
                               Paid by: <strong className="text-surface-500 dark:text-white font-extrabold">{paidLabel}</strong>
@@ -511,7 +513,7 @@ export default function TripView({ tripId, user, currency, activeTab, setActiveT
               <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                 {/* Category Progress Bars */}
                 <div className="card p-5 space-y-4">
-                  <h4 className="text-xs font-black text-[#808080] uppercase tracking-widest mb-2 border-b border-[#EEEEEE] dark:border-[#2D2D2D] pb-2">Category Spending Breakdown</h4>
+                  <h4 className="text-xs font-black text-[#808080] uppercase tracking-widest mb-2 border-b border-[#E8ECF0] dark:border-[#2D2D2D] pb-2">Category Spending Breakdown</h4>
                   {Object.entries(byCategory).sort((a, b) => b[1] - a[1]).map(([cat, sum]) => {
                     const pct = Math.round((sum / total) * 100)
                     const style = getCategoryStyle(cat)
@@ -538,8 +540,8 @@ export default function TripView({ tripId, user, currency, activeTab, setActiveT
                 {/* Visual mini bar charts inside Summary */}
                 <div className="card p-5 flex flex-col justify-between">
                   <div>
-                    <h4 className="text-xs font-black text-[#808080] uppercase tracking-widest mb-4 border-b border-[#EEEEEE] dark:border-[#2D2D2D] pb-2">Spending Trends</h4>
-                    <div className="flex justify-between items-end h-32 px-1 pt-2 gap-2 border-b border-[#EEEEEE] dark:border-[#2D2D2D] pb-1">
+                    <h4 className="text-xs font-black text-[#808080] uppercase tracking-widest mb-4 border-b border-[#E8ECF0] dark:border-[#2D2D2D] pb-2">Spending Trends</h4>
+                    <div className="flex justify-between items-end h-32 px-1 pt-2 gap-2 border-b border-[#E8ECF0] dark:border-[#2D2D2D] pb-1">
                       {Object.entries(byCategory).map(([cat, sum]) => {
                         const maxVal = Math.max(...Object.values(byCategory)) || 1
                         const pct = Math.max(5, (sum / maxVal) * 100)
@@ -581,7 +583,7 @@ export default function TripView({ tripId, user, currency, activeTab, setActiveT
               ]
               const pct = total > 0 ? Math.round((memberTotal / total) * 100) : 0
               return (
-                <div key={m.id} className="card p-5 border border-[#EEEEEE] dark:border-[#2D2D2D] bg-white dark:bg-[#1E1E1E]">
+                <div key={m.id} className="card p-5 border border-[#E8ECF0] dark:border-[#2D2D2D] bg-white dark:bg-[#1E1E1E]">
                   <div className="flex justify-between items-center mb-4">
                     <div className="flex items-center gap-3.5 min-w-0 pr-3">
                       <div className={`w-11 h-11 shrink-0 rounded-2xl bg-gradient-to-br ${MEMBER_COLORS[idx % MEMBER_COLORS.length]} flex items-center justify-center text-white font-black text-base shadow-md`}>
@@ -621,7 +623,7 @@ export default function TripView({ tripId, user, currency, activeTab, setActiveT
       {/* MOBILE LOG EXPENSE FLOATING ACTION BUTTON */}
       {isActive && activeTab === 'expenses' && (
         <button onClick={() => { setEditingExpense(null); setShowForm(true) }}
-          className="fixed bottom-6 right-6 mb-[env(safe-area-inset-bottom)] w-14 h-14 bg-gradient-to-br from-[#16B843] to-green-700 text-white rounded-[1.25rem] shadow-lg shadow-[#16B843]/30 flex items-center justify-center hover:scale-105 active:scale-95 transition-all z-40 sm:hidden">
+          className="fixed bottom-24 right-6 w-14 h-14 bg-gradient-to-br from-[#16B843] to-green-700 text-white rounded-[1.25rem] shadow-lg shadow-[#16B843]/30 flex items-center justify-center hover:scale-105 active:scale-95 transition-all z-40 sm:hidden">
           <svg className="w-6 h-6 drop-shadow-sm" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
           </svg>

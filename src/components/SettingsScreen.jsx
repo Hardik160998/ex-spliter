@@ -101,7 +101,7 @@ export default function SettingsScreen({ user, currency, onCurrencyChange, onBac
     <div className="space-y-6">
       
       {/* Settings Overview Header */}
-      <div className="flex justify-between items-end border-b border-[#EEEEEE] dark:border-[#2D2D2D] pb-3.5">
+      <div className="flex justify-between items-end border-b border-[#E8ECF0] dark:border-[#2D2D2D] pb-3.5">
         <div>
           <h2 className="text-xl font-black text-surface-500 dark:text-white leading-none">Settings Console</h2>
           <p className="text-[10px] font-bold text-[#808080] mt-1.5 uppercase tracking-widest">Tune profile, currencies, and safety parameters</p>
@@ -126,7 +126,7 @@ export default function SettingsScreen({ user, currency, onCurrencyChange, onBac
               className={`flex-1 text-left p-4 rounded-[1.25rem] border transition-all active:scale-[0.99] ${
                 section === item.id
                   ? 'bg-white dark:bg-[#1E1E1E] border-[#16B843]/60 shadow-md shadow-brand-500/5'
-                  : 'bg-white dark:bg-[#1E1E1E]/40 border-[#EEEEEE] dark:border-[#2D2D2D]/60 hover:bg-white/80'
+                  : 'bg-white dark:bg-[#1E1E1E]/40 border-[#E8ECF0] dark:border-[#2D2D2D]/60 hover:bg-white/80'
               }`}
             >
               <div className="flex items-center gap-3">
@@ -143,7 +143,7 @@ export default function SettingsScreen({ user, currency, onCurrencyChange, onBac
         </nav>
 
         {/* Dynamic Detail Console */}
-        <div className="flex-1 rounded-[1.5rem] bg-white dark:bg-[#1E1E1E] border border-[#EEEEEE] dark:border-[#2D2D2D] overflow-hidden shadow-sm">
+        <div className="flex-1 rounded-[1.5rem] bg-white dark:bg-[#1E1E1E] border border-[#E8ECF0] dark:border-[#2D2D2D] overflow-hidden shadow-sm">
           
           {/* Header Strip */}
           <div className="bg-gradient-to-r from-[#1E1E1E] to-[#121212] border-b border-[#2D2D2D] px-6 py-4">
@@ -167,7 +167,7 @@ export default function SettingsScreen({ user, currency, onCurrencyChange, onBac
                 ) : (
                   <>
                     {/* Avatar Upload block */}
-                    <div className="flex flex-col items-center sm:flex-row sm:items-start gap-5 pb-5 border-b border-[#EEEEEE] dark:border-[#2D2D2D]">
+                    <div className="flex flex-col items-center sm:flex-row sm:items-start gap-5 pb-5 border-b border-[#E8ECF0] dark:border-[#2D2D2D]">
                       <div className="relative shrink-0">
                         <div className="h-20 w-20 rounded-[1.5rem] bg-gradient-to-br from-[#16B843] to-green-700 overflow-hidden flex items-center justify-center ring-4 ring-[#DAF7E2] dark:ring-green-950/20 shadow-md">
                           {profile.avatar_url ? (
@@ -200,7 +200,7 @@ export default function SettingsScreen({ user, currency, onCurrencyChange, onBac
                       <div>
                         <label className="input-label">Login Account</label>
                         <input
-                          className="input bg-[#F9F9F9] dark:bg-[#1C1C1C] border border-[#EEEEEE] dark:border-[#2D2D2D]/60 text-surface-300 dark:text-[#808080] cursor-not-allowed"
+                          className="input bg-[#F9F9F9] dark:bg-[#1C1C1C] border border-[#E8ECF0] dark:border-[#2D2D2D]/60 text-surface-300 dark:text-[#808080] cursor-not-allowed"
                           disabled
                           value={user.email}
                         />
@@ -256,7 +256,7 @@ export default function SettingsScreen({ user, currency, onCurrencyChange, onBac
                       className={`flex items-center justify-between rounded-2xl border p-4 text-left transition-all active:scale-[0.99] ${
                         currency === c.code
                           ? 'border-[#16B843] bg-brand-50/20 dark:bg-green-950/20 shadow-sm'
-                          : 'border-[#EEEEEE] dark:border-[#2D2D2D]/60 hover:bg-[#F9F9F9]'
+                          : 'border-[#E8ECF0] dark:border-[#2D2D2D]/60 hover:bg-[#F9F9F9]'
                       }`}
                     >
                       <div className="min-w-0 pr-2">
@@ -283,11 +283,11 @@ export default function SettingsScreen({ user, currency, onCurrencyChange, onBac
               <div className="space-y-6 max-w-md">
                 
                 {/* Diagnostics Summary Card */}
-                <div className="card p-5 space-y-3 bg-[#F9F9F9] dark:bg-[#1C1C1C] border border-[#EEEEEE] dark:border-[#2D2D2D]/60">
+                <div className="card p-5 space-y-3 bg-[#F9F9F9] dark:bg-[#1C1C1C] border border-[#E8ECF0] dark:border-[#2D2D2D]/60">
                   <p className="text-[10px] font-black uppercase tracking-widest text-[#808080]">Security Identifiers</p>
                   <div className="flex justify-between items-center text-xs">
                     <span className="text-[#808080] font-bold">User UID</span>
-                    <span className="font-mono text-[10px] text-surface-400 dark:text-[#808080] bg-white dark:bg-[#2D2D2D] px-2 py-0.5 rounded border border-[#EEEEEE] dark:border-[#3D3D3D]">
+                    <span className="font-mono text-[10px] text-surface-400 dark:text-[#808080] bg-white dark:bg-[#2D2D2D] px-2 py-0.5 rounded border border-[#E8ECF0] dark:border-[#3D3D3D]">
                       {user.id.slice(0, 16)}...
                     </span>
                   </div>
@@ -298,7 +298,7 @@ export default function SettingsScreen({ user, currency, onCurrencyChange, onBac
                 </div>
 
                 {/* Developer details */}
-                <div className="card p-5 space-y-2 text-xs bg-[#F9F9F9] dark:bg-[#1C1C1C] border border-[#EEEEEE] dark:border-[#2D2D2D]/60">
+                <div className="card p-5 space-y-2 text-xs bg-[#F9F9F9] dark:bg-[#1C1C1C] border border-[#E8ECF0] dark:border-[#2D2D2D]/60">
                   <p className="text-[10px] font-black uppercase tracking-widest text-[#808080] mb-2">Build Environment</p>
                   <div className="flex justify-between">
                     <span className="text-[#808080] font-bold">Version</span>

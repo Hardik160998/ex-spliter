@@ -1,58 +1,86 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 
-// Maps currency symbol to ISO code for the API
 const SYMBOL_TO_ISO = {
   '₹': 'INR', '$': 'USD', '€': 'EUR', '£': 'GBP',
-  '¥': 'JPY', 'A$': 'AUD', 'C$': 'CAD', 'S$': 'SGD', 'AED': 'AED',
+  '¥': 'JPY', 'A$': 'AUD', 'C$': 'CAD', 'S$': 'SGD',
+  'AED': 'AED', 'CHF': 'CHF', 'CN¥': 'CNY', 'HK$': 'HKD',
+  'MX$': 'MXN', 'NZ$': 'NZD', 'R$': 'BRL', 'R': 'ZAR',
+  '₩': 'KRW', '₺': 'TRY', '₽': 'RUB', '฿': 'THB',
+  '₫': 'VND', '₱': 'PHP', 'Rp': 'IDR', 'RM': 'MYR',
 }
 
-const CACHE_KEY = 'fx_rates'
-const CACHE_TTL = 60 * 60 * 1000 // 1 hour
+const CACHE_KEY = 'fx_rates_unified'
+const CACHE_TTL = 60 * 60 * 1000
 
-export function useCurrencyRates(baseCurrencySymbol) {
-  const [rates, setRates] = useState(null) // { USD: 0.012, EUR: 0.011, ... }
-  const [loading, setLoading] = useState(true)
+// Global state so all components share one rate fetch
+let globalRates = null
+let globalLoading = true
+let globalListeners = []
+let globalFetchStarted = false
+
+function notifyListeners() {
+  globalListeners.forEach(fn => fn())
+}
+
+export function useCurrencyRates() {
+  const [, forceUpdate] = useState(0)
 
   useEffect(() => {
-    const isoBase = SYMBOL_TO_ISO[baseCurrencySymbol] || 'INR'
+    const listener = () => forceUpdate(n => n + 1)
+    globalListeners.push(listener)
+    return () => { globalListeners = globalListeners.filter(l => l !== listener) }
+  }, [])
+
+  // Fetch once
+  useEffect(() => {
+    if (globalFetchStarted) return
+    globalFetchStarted = true
 
     // Check cache
     try {
       const cached = JSON.parse(localStorage.getItem(CACHE_KEY) || '{}')
-      if (cached[isoBase] && Date.now() - cached[isoBase].ts < CACHE_TTL) {
-        setRates(cached[isoBase].rates)
-        setLoading(false)
+      if (cached.rates && Date.now() - cached.ts < CACHE_TTL) {
+        globalRates = cached.rates
+        globalLoading = false
+        notifyListeners()
         return
       }
     } catch {}
 
-    // Fetch from free API (no key needed)
-    fetch(`https://open.er-api.com/v6/latest/${isoBase}`)
+    fetch('https://open.er-api.com/v6/latest/USD')
       .then(r => r.json())
       .then(data => {
         if (data.rates) {
-          setRates(data.rates)
-          // Cache it
+          globalRates = data.rates
+          globalRates['USD'] = 1
           try {
-            const cached = JSON.parse(localStorage.getItem(CACHE_KEY) || '{}')
-            cached[isoBase] = { rates: data.rates, ts: Date.now() }
-            localStorage.setItem(CACHE_KEY, JSON.stringify(cached))
+            localStorage.setItem(CACHE_KEY, JSON.stringify({ rates: globalRates, ts: Date.now() }))
           } catch {}
         }
-        setLoading(false)
+        globalLoading = false
+        notifyListeners()
       })
-      .catch(() => setLoading(false))
-  }, [baseCurrencySymbol])
+      .catch(() => { globalLoading = false; notifyListeners() })
+  }, [])
 
-  // Convert amount from base currency to target currency
-  const convert = (amount, targetSymbol) => {
-    if (!rates || targetSymbol === baseCurrencySymbol) return Number(amount)
-    const isoTarget = SYMBOL_TO_ISO[targetSymbol]
-    if (!isoTarget || !rates[isoTarget]) return Number(amount)
-    return Number(amount) * rates[isoTarget]
-  }
+  const convert = useCallback((amount, fromSymbol, toSymbol) => {
+    if (!fromSymbol || !toSymbol) return Number(amount)
+    if (fromSymbol === toSymbol) return Number(amount)
+    if (!globalRates) return Number(amount)
 
-  return { convert, loading, rates }
+    const fromISO = SYMBOL_TO_ISO[fromSymbol]
+    const toISO = SYMBOL_TO_ISO[toSymbol]
+    if (!fromISO || !toISO) return Number(amount)
+
+    const rateFrom = globalRates[fromISO]
+    const rateTo = globalRates[toISO]
+    if (!rateFrom || !rateTo) return Number(amount)
+
+    // Convert: amount_in_usd = amount / rateFrom; amount_in_target = amount_in_usd * rateTo
+    return Number(amount) / rateFrom * rateTo
+  }, [])
+
+  return { convert, loading: globalLoading, rates: globalRates }
 }
 
 export { SYMBOL_TO_ISO }

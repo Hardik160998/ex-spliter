@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { supabase } from './supabaseClient'
 import Auth from './components/Auth'
 import Dashboard from './components/Dashboard'
+import TripList from './components/TripList'
 import TripView from './components/TripView'
 import SettingsScreen from './components/SettingsScreen'
 
@@ -11,6 +12,7 @@ function getRoute() {
   let path = window.location.pathname
   if (path.length > 1 && path.endsWith('/')) path = path.slice(0, -1)
   if (path === '/settings') return { page: 'settings' }
+  if (path === '/trips' || path === '/trips/') return { page: 'trips' }
   const match = path.match(/^\/trip\/([a-f0-9-]+)$/)
   if (match) return { page: 'trip', tripId: match[1] }
   return { page: 'dashboard' }
@@ -41,7 +43,12 @@ function AppLayout({
       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5">
         <path strokeLinecap="round" strokeLinejoin="round" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2H6a2 2 0 01-2-2v-4zM14 16a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2h-2a2 2 0 01-2-2v-4z" />
       </svg>
-    ), active: route.page === 'dashboard', onClick: () => goTo('/') }
+    ), active: route.page === 'dashboard', onClick: () => goTo('/') },
+    { id: 'trips', label: 'Trips', icon: (
+      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5">
+        <path strokeLinecap="round" strokeLinejoin="round" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
+      </svg>
+    ), active: route.page === 'trips', onClick: () => goTo('/trips') }
   ]
 
   // Add Settings item
@@ -55,48 +62,49 @@ function AppLayout({
   // Title of current section
   let pageTitle = 'Overview'
   if (route.page === 'settings') pageTitle = 'Settings'
+  else if (route.page === 'trips') pageTitle = 'Trip Directory'
   else if (route.page === 'trip' && activeTrip) pageTitle = activeTrip.name
 
   return (
-    <div className="flex min-h-screen bg-surface-50 dark:bg-[#121212] transition-colors duration-300">
+    <div className="flex min-h-screen bg-[#F5F7FA] dark:bg-[#121212] transition-colors duration-300">
       {/* DESKTOP SIDEBAR */}
-      <aside className="hidden md:flex flex-col w-64 bg-[#1E1E1E] text-white shrink-0 border-r border-[#2D2D2D] p-5 justify-between">
+      <aside className="hidden md:flex flex-col w-64 bg-white dark:bg-[#1A1A1A] text-surface-500 dark:text-white shrink-0 border-r border-[#E8ECF0] dark:border-[#2D2D2D] p-5 justify-between">
         <div className="space-y-8">
           {/* Logo */}
           <div className="flex items-center gap-3 px-2">
-            <div className="w-9 h-9 rounded-2xl bg-gradient-to-br from-brand-400 to-brand-600 flex items-center justify-center shadow-lg shadow-brand-500/20">
+            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-brand-400 to-brand-600 flex items-center justify-center shadow-lg shadow-brand-500/20">
               <span className="text-base text-white">✈️</span>
             </div>
-            <span className="text-xl font-black tracking-tight text-white">
+            <span className="typo-h2 text-surface-500 dark:text-white">
               TRIPSPLIT
             </span>
           </div>
 
           {/* Sidebar Menu */}
-          <nav className="space-y-1.5">
+          <nav className="space-y-1">
             {sidebarItems.map(item => (
               <button
                 key={item.id}
                 onClick={item.onClick}
-                className={`w-full flex items-center gap-3.5 px-4 py-3 rounded-2xl text-sm font-bold transition-all ${
+                className={`w-full flex items-center gap-3.5 px-4 py-3 rounded-xl typo-nav transition-all ${
                   item.active
-                    ? 'bg-[#16B843] text-white shadow-lg shadow-[#16B843]/20'
-                    : 'text-surface-400 hover:text-white hover:bg-white/[0.04]'
+                    ? 'bg-[#16B843] text-white shadow-md shadow-[#16B843]/15'
+                    : 'text-surface-400 dark:text-surface-400 hover:text-surface-500 dark:hover:text-white hover:bg-surface-50 dark:hover:bg-white/[0.05]'
                 }`}
               >
-                <span className={item.active ? 'scale-110' : 'opacity-70'}>{item.icon}</span>
+                <span className={item.active ? '' : 'opacity-70'}>{item.icon}</span>
                 <span>{item.label}</span>
               </button>
             ))}
 
             {/* Active Trip Sub-Menu */}
             {route.page === 'trip' && activeTrip && (
-              <div className="mt-6 pt-6 border-t border-white/[0.06] space-y-4">
+              <div className="mt-6 pt-6 border-t border-[#E8ECF0] dark:border-[#2D2D2D] space-y-4">
                 <div className="px-3 flex items-center gap-2">
                   <span className="text-lg">{activeTrip.emoji || '🧳'}</span>
-                  <span className="text-xs font-black text-white/40 uppercase tracking-widest truncate">{activeTrip.name}</span>
+                  <span className="text-xs font-black text-surface-300 dark:text-white/40 uppercase tracking-widest truncate">{activeTrip.name}</span>
                 </div>
-                <div className="space-y-1">
+                <div className="space-y-0.5">
                   {[
                     { id: 'expenses', label: 'Costs', icon: (
                       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5">
@@ -124,8 +132,8 @@ function AppLayout({
                       onClick={() => setActiveTripTab(tab.id)}
                       className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-xs font-bold transition-all ${
                         activeTripTab === tab.id
-                          ? 'bg-white/10 text-white border-l-4 border-[#16B843]'
-                          : 'text-surface-400 hover:text-white hover:bg-white/[0.03]'
+                          ? 'bg-[#16B843]/10 text-[#16B843] dark:text-brand-400 font-black'
+                          : 'text-surface-400 dark:text-surface-400 hover:text-surface-500 dark:hover:text-white hover:bg-surface-50 dark:hover:bg-white/[0.03]'
                       }`}
                     >
                       <span className={activeTripTab === tab.id ? 'text-[#16B843]' : 'opacity-60'}>{tab.icon}</span>
@@ -138,13 +146,13 @@ function AppLayout({
           </nav>
         </div>
 
-        <div className="space-y-4">
+        <div className="space-y-3 pt-4 border-t border-[#E8ECF0] dark:border-[#2D2D2D]">
           <button
             onClick={settingsItem.onClick}
-            className={`w-full flex items-center gap-3.5 px-4 py-3 rounded-2xl text-sm font-bold transition-all ${
+            className={`w-full flex items-center gap-3.5 px-4 py-3 rounded-xl text-sm font-bold transition-all ${
               settingsItem.active
-                ? 'bg-[#16B843] text-white shadow-lg shadow-[#16B843]/20'
-                : 'text-surface-400 hover:text-white hover:bg-white/[0.04]'
+                ? 'bg-[#16B843] text-white shadow-md shadow-[#16B843]/15'
+                : 'text-surface-400 dark:text-surface-400 hover:text-surface-500 dark:hover:text-white hover:bg-surface-50 dark:hover:bg-white/[0.05]'
             }`}
           >
             <span className="opacity-70">{settingsItem.icon}</span>
@@ -153,7 +161,7 @@ function AppLayout({
           
           <button
             onClick={onSignOut}
-            className="w-full flex items-center gap-3.5 px-4 py-3 rounded-2xl text-sm font-bold text-[#F63332] hover:bg-[#F63332]/10 transition-all"
+            className="w-full flex items-center gap-3.5 px-4 py-3 rounded-xl text-sm font-bold text-[#F63332] hover:bg-[#F63332]/10 dark:hover:bg-[#F63332]/15 transition-all"
           >
             <svg className="w-5 h-5 opacity-70" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5">
               <path strokeLinecap="round" strokeLinejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
@@ -166,7 +174,7 @@ function AppLayout({
       {/* MAIN CONTAINER */}
       <div className="flex-1 flex flex-col min-w-0">
         {/* TOP HEADER */}
-        <header className="bg-white/80 dark:bg-[#1E1E1E]/80 backdrop-blur-xl border-b border-[#EEEEEE] dark:border-[#2D2D2D] py-3.5 px-6 flex justify-between items-center sticky top-0 z-30 transition-colors">
+        <header className="bg-white dark:bg-[#1E1E1E] border-b border-[#E8ECF0] dark:border-[#2D2D2D] py-3.5 px-4 md:pl-6 md:pr-10 flex justify-between items-center sticky top-0 z-30 transition-colors shadow-sm">
           {/* Section / Trip Title */}
           <div className="flex items-center gap-3">
             {route.page !== 'dashboard' && (
@@ -179,7 +187,7 @@ function AppLayout({
                 </svg>
               </button>
             )}
-            <h2 className="text-xl md:text-2xl font-black text-surface-500 dark:text-white tracking-tight leading-none truncate max-w-[200px] sm:max-w-xs md:max-w-none">
+            <h2 className="typo-h2 truncate max-w-[200px] sm:max-w-xs md:max-w-none">
               {pageTitle}
             </h2>
           </div>
@@ -194,7 +202,7 @@ function AppLayout({
                   placeholder="Search trips..."
                   value={searchQuery}
                   onChange={e => setSearchQuery(e.target.value)}
-                  className="w-48 md:w-64 bg-[#F9F9F9] dark:bg-[#121212] border border-[#EEEEEE] dark:border-[#2D2D2D] rounded-full py-2 pl-10 pr-4 text-xs font-semibold text-surface-500 dark:text-white outline-none focus:border-[#16B843] focus:ring-1 focus:ring-[#16B843] transition-all placeholder-surface-300 dark:placeholder-surface-400"
+                  className="w-48 md:w-64 bg-[#F9F9F9] dark:bg-[#121212] border border-[#E8ECF0] dark:border-[#2D2D2D] rounded-full py-2 pl-10 pr-4 text-xs font-semibold text-surface-500 dark:text-white outline-none focus:border-[#16B843] focus:ring-1 focus:ring-[#16B843] transition-all placeholder-surface-300 dark:placeholder-surface-400"
                 />
                 <svg className="absolute left-3.5 top-2.5 w-3.5 h-3.5 text-surface-400 dark:text-surface-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="3">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
@@ -205,7 +213,7 @@ function AppLayout({
             {/* Dark Mode Theme Toggle */}
             <button
               onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')}
-              className="flex items-center justify-center w-9 h-9 rounded-xl bg-[#F9F9F9] dark:bg-[#2D2D2D] border border-[#EEEEEE] dark:border-[#3D3D3D] hover:text-[#16B843] dark:hover:text-[#16B843] text-surface-400 dark:text-surface-300 transition-all active:scale-95 shadow-sm"
+              className="flex items-center justify-center w-9 h-9 rounded-xl bg-[#F9F9F9] dark:bg-[#2D2D2D] border border-[#E8ECF0] dark:border-[#3D3D3D] hover:text-[#16B843] dark:hover:text-[#16B843] text-surface-400 dark:text-surface-300 transition-all active:scale-95 shadow-sm"
               title="Toggle Light/Dark Theme"
             >
               {theme === 'light' ? (
@@ -222,7 +230,7 @@ function AppLayout({
             {/* Notifications Alert Bell */}
             <div className="relative">
               <button
-                className="flex items-center justify-center w-9 h-9 rounded-xl bg-[#F9F9F9] dark:bg-[#2D2D2D] border border-[#EEEEEE] dark:border-[#3D3D3D] text-surface-400 dark:text-surface-300 transition-all active:scale-95 shadow-sm"
+                className="flex items-center justify-center w-9 h-9 rounded-xl bg-[#F9F9F9] dark:bg-[#2D2D2D] border border-[#E8ECF0] dark:border-[#3D3D3D] text-surface-400 dark:text-surface-300 transition-all active:scale-95 shadow-sm"
                 title="Notifications"
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.2">
@@ -239,7 +247,7 @@ function AppLayout({
             <div className="relative">
               <button
                 onClick={() => setProfileOpen(!profileOpen)}
-                className="flex items-center gap-2 bg-[#F9F9F9] dark:bg-[#2D2D2D] hover:bg-surface-100 dark:hover:bg-[#3D3D3D] border border-[#EEEEEE] dark:border-[#3D3D3D] pl-2.5 pr-3 py-1.5 rounded-2xl transition-all active:scale-95 shadow-sm"
+                className="flex items-center gap-2 bg-[#F9F9F9] dark:bg-[#2D2D2D] hover:bg-surface-100 dark:hover:bg-[#3D3D3D] border border-[#E8ECF0] dark:border-[#3D3D3D] pl-2.5 pr-3 py-1.5 rounded-2xl transition-all active:scale-95 shadow-sm"
               >
                 <div className="w-7 h-7 rounded-full overflow-hidden bg-gradient-to-br from-brand-400 to-brand-600 flex items-center justify-center text-white text-xs font-black shrink-0 shadow-inner">
                   {profile?.avatar_url ? (
@@ -259,8 +267,8 @@ function AppLayout({
               {profileOpen && (
                 <>
                   <div className="fixed inset-0 z-40" onClick={() => setProfileOpen(false)} />
-                  <div className="absolute right-0 top-full mt-2 w-48 bg-white dark:bg-[#1E1E1E] border border-[#EEEEEE] dark:border-[#2D2D2D] rounded-2xl shadow-xl py-1.5 z-50 animate-fadeIn origin-top-right">
-                    <div className="px-4 py-2 border-b border-[#EEEEEE] dark:border-[#2D2D2D]">
+                  <div className="absolute right-0 top-full mt-2 w-48 bg-white dark:bg-[#1E1E1E] border border-[#E8ECF0] dark:border-[#2D2D2D] rounded-2xl shadow-xl py-1.5 z-50 animate-fadeIn origin-top-right">
+                    <div className="px-4 py-2 border-b border-[#E8ECF0] dark:border-[#2D2D2D]">
                       <p className="text-xs font-black text-surface-300 dark:text-surface-400 uppercase tracking-widest">Logged In As</p>
                       <p className="text-xs font-bold text-surface-500 dark:text-white truncate mt-0.5">{user?.email}</p>
                     </div>
@@ -284,49 +292,125 @@ function AppLayout({
         </header>
 
         {/* SCREEN SCROLLABLE CONTENT */}
-        <main className="flex-1 overflow-y-auto px-4 md:px-8 py-6 relative">
-          <div className="max-w-6xl mx-auto">
+        <main className="flex-1 overflow-y-auto px-4 md:pl-6 md:pr-10 py-6 pb-20 md:pb-6 relative">
+          <div className="w-full">
             {children}
           </div>
         </main>
       </div>
 
-      {/* MOBILE BOTTOM NAVIGATION */}
+      {/* MOBILE BOTTOM NAV - TRIP VIEW (trip detail pages) */}
       {route.page === 'trip' && activeTrip && (
-        <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white/90 dark:bg-[#1E1E1E]/90 border-t border-[#EEEEEE] dark:border-[#2D2D2D] py-2 px-4 flex justify-around items-center z-30 backdrop-blur-xl">
-          {[
-            { id: 'expenses', label: 'Costs', icon: (
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
-              </svg>
-            )},
-            { id: 'summary', label: 'Analytics', icon: (
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 002 2h2a2 2 0 002-2z" />
-              </svg>
-            )},
-            { id: 'members', label: 'Crew', icon: (
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a3 3 0 11-6 0 3 3 0 016 0z" />
-              </svg>
-            )},
-            { id: 'settle', label: 'Transfer', icon: (
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
-              </svg>
-            )}
-          ].map(tab => (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTripTab(tab.id)}
-              className={`flex flex-col items-center gap-0.5 py-1 px-3.5 rounded-xl transition-all ${
-                activeTripTab === tab.id ? 'text-[#16B843] font-black' : 'text-surface-400'
-              }`}
-            >
-              <span>{tab.icon}</span>
-              <span className="text-[9px] uppercase tracking-wider">{tab.label}</span>
-            </button>
-          ))}
+        <nav className="md:hidden fixed bottom-0 left-0 right-0 z-30">
+          <div className="bg-white/95 dark:bg-[#1E1E1E]/95 backdrop-blur-xl border-t border-[#E8ECF0] dark:border-[#2D2D2D] rounded-t-2xl shadow-[0_-4px_20px_rgba(0,0,0,0.06)] pb-[env(safe-area-inset-bottom)]">
+            <div className="flex justify-around items-center py-2 px-2">
+              {[
+                { id: 'expenses', label: 'Costs', icon: (
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.2">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+                  </svg>
+                )},
+                { id: 'summary', label: 'Analytics', icon: (
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.2">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 002 2h2a2 2 0 002-2z" />
+                  </svg>
+                )},
+                { id: 'members', label: 'Crew', icon: (
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.2">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a3 3 0 11-6 0 3 3 0 016 0z" />
+                  </svg>
+                )},
+                { id: 'settle', label: 'Transfer', icon: (
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.2">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
+                  </svg>
+                )}
+              ].map(tab => (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveTripTab(tab.id)}
+                  className={`flex flex-col items-center gap-0.5 py-1.5 px-4 rounded-xl transition-all relative ${
+                    activeTripTab === tab.id ? 'text-[#16B843]' : 'text-surface-400 hover:text-surface-500 dark:hover:text-white'
+                  } active:scale-90`}
+                >
+                  {activeTripTab === tab.id && (
+                    <span className="absolute -top-0.5 left-1/2 -translate-x-1/2 w-5 h-0.5 bg-[#16B843] rounded-full" />
+                  )}
+                  <span className={`transition-transform duration-200 ${activeTripTab === tab.id ? 'scale-110' : ''}`}>
+                    {tab.icon}
+                  </span>
+                  <span className={`text-[9px] font-black uppercase tracking-wider ${
+                    activeTripTab === tab.id ? 'text-[#16B843]' : ''
+                  }`}>
+                    {tab.label}
+                  </span>
+                </button>
+              ))}
+            </div>
+          </div>
+        </nav>
+      )}
+
+      {/* MOBILE BOTTOM NAV - MAIN (dashboard, trips list, settings) */}
+      {route.page !== 'trip' && (
+        <nav className="md:hidden fixed bottom-0 left-0 right-0 z-30">
+          <div className="bg-white/95 dark:bg-[#1E1E1E]/95 backdrop-blur-xl border-t border-[#E8ECF0] dark:border-[#2D2D2D] rounded-t-2xl shadow-[0_-4px_20px_rgba(0,0,0,0.06)] pb-[env(safe-area-inset-bottom)]">
+            <div className="flex justify-around items-center py-2 px-2">
+              {[
+                {
+                  id: 'overview', label: 'Overview',
+                  icon: (
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.2">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2H6a2 2 0 01-2-2v-4zM14 16a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2h-2a2 2 0 01-2-2v-4z" />
+                    </svg>
+                  ),
+                  active: route.page === 'dashboard',
+                  onClick: () => goTo('/')
+                },
+                {
+                  id: 'trips', label: 'Trips',
+                  icon: (
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.2">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
+                    </svg>
+                  ),
+                  active: route.page === 'trips',
+                  onClick: () => goTo('/trips')
+                },
+                {
+                  id: 'settings', label: 'Settings',
+                  icon: (
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.2">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                  ),
+                  active: route.page === 'settings',
+                  onClick: () => onOpenSettings(window.location.pathname)
+                }
+              ].map(tab => (
+                <button
+                  key={tab.id}
+                  onClick={tab.onClick}
+                  className={`flex flex-col items-center gap-0.5 py-1.5 px-4 rounded-xl transition-all relative ${
+                    tab.active ? 'text-[#16B843]' : 'text-surface-400 hover:text-surface-500 dark:hover:text-white'
+                  } active:scale-90`}
+                >
+                  {tab.active && (
+                    <span className="absolute -top-0.5 left-1/2 -translate-x-1/2 w-5 h-0.5 bg-[#16B843] rounded-full" />
+                  )}
+                  <span className={`transition-transform duration-200 ${tab.active ? 'scale-110' : ''}`}>
+                    {tab.icon}
+                  </span>
+                  <span className={`text-[9px] font-black uppercase tracking-wider ${
+                    tab.active ? 'text-[#16B843]' : ''
+                  }`}>
+                    {tab.label}
+                  </span>
+                </button>
+              ))}
+            </div>
+          </div>
         </nav>
       )}
     </div>
@@ -532,6 +616,16 @@ export default function App() {
         onBack={closeSettings}
         onSignOut={handleSignOut}
         onProfileUpdated={() => fetchProfile(session.user.id)}
+      />
+    )
+  } else if (route.page === 'trips') {
+    content = (
+      <TripList
+        user={session.user}
+        currency={currency}
+        onSelectTrip={(id) => goTo(`/trip/${id}`)}
+        onOpenSettings={() => openSettings('/')}
+        profile={profile}
       />
     )
   } else if (route.page === 'trip' && route.tripId) {

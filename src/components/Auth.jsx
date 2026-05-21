@@ -81,7 +81,7 @@ export default function Auth() {
         </div>
 
         {/* Auth Credentials Card */}
-        <div className="bg-white dark:bg-[#1E1E1E] p-8 rounded-[2.25rem] border border-[#EEEEEE] dark:border-[#2D2D2D] shadow-2xl relative">
+        <div className="bg-white dark:bg-[#1E1E1E] p-8 rounded-[2.25rem] border border-[#E8ECF0] dark:border-[#2D2D2D] shadow-2xl relative">
           
           <div className="mb-6">
             <h2 className="text-lg font-black text-surface-500 dark:text-white tracking-tight">
