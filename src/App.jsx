@@ -13,9 +13,10 @@ function getRoute() {
   if (path.length > 1 && path.endsWith('/')) path = path.slice(0, -1)
   if (path === '/settings') return { page: 'settings' }
   if (path === '/trips' || path === '/trips/') return { page: 'trips' }
+  if (path === '/overview' || path === '/overview/') return { page: 'dashboard' }
   const match = path.match(/^\/trip\/([a-f0-9-]+)$/)
   if (match) return { page: 'trip', tripId: match[1] }
-  return { page: 'dashboard' }
+  return { page: 'trips' }
 }
 
 function AppLayout({
@@ -43,7 +44,7 @@ function AppLayout({
       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5">
         <path strokeLinecap="round" strokeLinejoin="round" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2H6a2 2 0 01-2-2v-4zM14 16a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2h-2a2 2 0 01-2-2v-4z" />
       </svg>
-    ), active: route.page === 'dashboard', onClick: () => goTo('/') },
+    ), active: route.page === 'dashboard', onClick: () => goTo('/overview') },
     { id: 'trips', label: 'Trips', icon: (
       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5">
         <path strokeLinecap="round" strokeLinejoin="round" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
@@ -365,7 +366,7 @@ function AppLayout({
                     </svg>
                   ),
                   active: route.page === 'dashboard',
-                  onClick: () => goTo('/')
+                  onClick: () => goTo('/overview')
                 },
                 {
                   id: 'trips', label: 'Trips',
@@ -624,7 +625,7 @@ export default function App() {
         user={session.user}
         currency={currency}
         onSelectTrip={(id) => goTo(`/trip/${id}`)}
-        onOpenSettings={() => openSettings('/')}
+        onOpenSettings={() => openSettings('/trips')}
         profile={profile}
       />
     )
@@ -649,7 +650,7 @@ export default function App() {
         searchQuery={searchQuery}
         onCurrencyChange={handleCurrencyChange}
         onSelectTrip={(id) => goTo(`/trip/${id}`)}
-        onOpenSettings={() => openSettings('/')}
+        onOpenSettings={() => openSettings('/overview')}
         profile={profile}
       />
     )

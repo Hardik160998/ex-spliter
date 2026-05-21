@@ -85,7 +85,7 @@ function SettleTab({ settlements, members, expenses, user, fmt, total }) {
   return (
     <div className="space-y-6">
       {/* Overview stats inside split tab */}
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-3 gap-1">
         {[
           { label: 'Total Spent', value: fmt(total) },
           { label: 'Crew Count', value: members.length },
@@ -473,15 +473,15 @@ export default function TripView({ tripId, user, currency, activeTab, setActiveT
                         </div>
 
                         <div className="mt-4 flex items-baseline justify-between border-t border-[#E8ECF0] dark:border-[#2D2D2D] pt-3.5">
-                          <div className="flex items-center gap-1.5 text-xs font-bold text-surface-400 dark:text-surface-300">
-                            <span className="truncate max-w-[80px]" title={paidLabel}>
+                          <div className="flex items-center gap-1.5 text-xs font-bold text-surface-400 dark:text-surface-300 min-w-0 flex-1">
+                            <span className="truncate" title={paidLabel}>
                               Paid by: <strong className="text-surface-500 dark:text-white font-extrabold">{paidLabel}</strong>
                             </span>
                             {isManualPayer && (
-                              <span className="text-[8px] font-black uppercase tracking-wider bg-[#EEEEEE] dark:bg-[#2D2D2D] px-1.5 py-0.5 rounded">Manual</span>
+                              <span className="shrink-0 text-[8px] font-black uppercase tracking-wider bg-[#EEEEEE] dark:bg-[#2D2D2D] px-1.5 py-0.5 rounded">Manual</span>
                             )}
                           </div>
-                          <span className="text-[#16B843] font-black text-lg tabular-nums tracking-tight">
+                          <span className="shrink-0 text-[#16B843] font-black text-lg tabular-nums tracking-tight">
                             {fmt(exp.amount)}
                           </span>
                         </div>
