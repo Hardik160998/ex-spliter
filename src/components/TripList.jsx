@@ -287,7 +287,7 @@ export default function TripList({ user, currency, onSelectTrip, onOpenSettings,
                 onClick={() => onSelectTrip(trip.id)}
                 className="w-full text-left bg-white dark:bg-[#1E1E1E] rounded-2xl overflow-hidden group active:scale-[0.99] border border-[#E8ECF0] dark:border-[#2D2D2D] hover:shadow-md transition-all"
               >
-                <div className={`bg-gradient-to-r ${gradient} h-1.5 w-full`} />
+                <div className="h-1.5 w-full bg-gradient-to-r from-[#16B843] via-emerald-400 to-[#16B843]" />
                 <div className="p-5">
                   <div className="flex justify-between items-start mb-3">
                     <div className="flex items-center gap-3 min-w-0 pr-2">
