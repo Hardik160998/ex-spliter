@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo, useRef } from 'react'
 import { supabase } from '../supabaseClient'
 import { useCurrencyRates } from '../hooks/useCurrencyRates'
-import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, BarChart, Bar, Legend } from 'recharts'
+import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts'
 
 const DATE_RANGES = [
   { value: '1m', label: '1 Month' },
@@ -12,7 +12,6 @@ const DATE_RANGES = [
   { value: 'custom', label: 'Custom' },
 ]
 
-const CHART_COLORS = ['#16B843', '#10B981', '#06B6D4', '#8B5CF6', '#F59E0B', '#EF4444', '#EC4899', '#14B8A6', '#6366F1', '#F97316']
 
 const PIE_COLORS = ['#16B843', '#F59E0B', '#3B82F6', '#8B5CF6', '#EC4899', '#6B7280']
 
@@ -52,12 +51,23 @@ function groupByCategory(expenses) {
   return Object.entries(map).map(([name, value]) => ({ name, value: Math.round(value * 100) / 100 }))
 }
 
-function groupByMember(expenses, members) {
+function buildMemberLookup(members) {
   const map = {}
+  members.forEach(m => { map[m.id] = m.display_name })
+  return map
+}
+
+function groupByMember(expenses, allMembers) {
+  const lookup = buildMemberLookup(allMembers)
+  const map = {}
+  const seen = new Set()
   expenses.forEach(e => {
-    const member = members.find(m => m.id === e.member_id)
-    const name = member?.display_name || 'Unknown'
+    const name = lookup[e.member_id] || 'Unknown'
+    seen.add(e.member_id)
     map[name] = (map[name] || 0) + Number(e.amount)
+  })
+  allMembers.forEach(m => {
+    if (!seen.has(m.id)) map[m.display_name] = map[m.display_name] || 0
   })
   return Object.entries(map).map(([name, amount]) => ({ name, amount: Math.round(amount * 100) / 100 })).sort((a, b) => b.amount - a.amount)
 }
@@ -91,6 +101,7 @@ function exportCSV(data, filename) {
 
 export default function AnalyticsScreen({ user, currency, profile }) {
   const [trips, setTrips] = useState([])
+  const [allMembers, setAllMembers] = useState([])
   const [loading, setLoading] = useState(true)
   const [dateRange, setDateRange] = useState('all')
   const [customStart, setCustomStart] = useState('')
@@ -109,6 +120,15 @@ export default function AnalyticsScreen({ user, currency, profile }) {
         if (!error && data) {
           const allTrips = data.map(tm => tm.trips).filter(Boolean)
           setTrips(allTrips)
+
+          const tripIds = allTrips.map(t => t.id)
+          if (tripIds.length) {
+            const { data: members } = await supabase
+              .from('trip_members')
+              .select('id, display_name, trip_id, user_id')
+              .in('trip_id', tripIds)
+            if (members) setAllMembers(members)
+          }
         }
       } catch {}
       setLoading(false)
@@ -124,7 +144,7 @@ export default function AnalyticsScreen({ user, currency, profile }) {
 
   const displayCurrency = currency || '₹'
 
-  const { filteredTrips, allExpenses, resetRange } = useMemo(() => {
+  const { filteredTrips, allExpenses } = useMemo(() => {
     let filtered = [...trips]
     let allE = trips.flatMap(t => (t.expenses || []).map(e => ({ ...e, base_currency: t.base_currency || '₹', trip_name: t.name, trip_id: t.id, trip_status: t.status }))).sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
 
@@ -163,9 +183,7 @@ export default function AnalyticsScreen({ user, currency, profile }) {
     const totalSpending = convertedExpenses.reduce((s, e) => s + e.convertedAmount, 0)
     const totalTrips = filteredTrips.length
     const totalExpenses = convertedExpenses.length
-    const uniqueMembers = new Set()
-    filteredTrips.forEach(t => t.expenses?.forEach(e => uniqueMembers.add(e.member_id)))
-    const totalMembers = uniqueMembers.size
+    const totalMembers = allMembers.length
     const avgTripCost = totalTrips ? totalSpending / totalTrips : 0
     const mostExpensiveTrip = filteredTrips.length ? filteredTrips.reduce((a, b) => {
       const aTotal = (a.expenses || []).reduce((s, e) => s + convert(Number(e.amount), a.base_currency || '₹', displayCurrency), 0)
@@ -206,17 +224,21 @@ export default function AnalyticsScreen({ user, currency, profile }) {
     return groupByCategory(converted)
   }, [allExpenses, displayCurrency, convert])
 
+  const memberLookup = useMemo(() => {
+    const map = {}
+    allMembers.forEach(m => { map[m.id] = m.display_name })
+    return map
+  }, [allMembers])
+
   const memberData = useMemo(() => {
-    const tripsWithMembers = filteredTrips.filter(t => t.members)
     const converted = allExpenses.map(e => ({ ...e, convertedAmount: convert(Number(e.amount), e.base_currency, displayCurrency) }))
-    return groupByMember(converted, filteredTrips.flatMap(t => t.members || []))
-  }, [filteredTrips, allExpenses, displayCurrency, convert])
+    return groupByMember(converted, allMembers)
+  }, [allMembers, allExpenses, displayCurrency, convert])
 
   const settlementInfo = useMemo(() => {
     const converted = allExpenses.map(e => ({ ...e, convertedAmount: convert(Number(e.amount), e.base_currency, displayCurrency) }))
-    const allMembers = filteredTrips.flatMap(t => t.members || [])
     return calcSettlements(allMembers, converted)
-  }, [filteredTrips, allExpenses, displayCurrency, convert])
+  }, [allMembers, allExpenses, displayCurrency, convert])
 
   const insights = useMemo(() => {
     const list = []
@@ -420,32 +442,39 @@ export default function AnalyticsScreen({ user, currency, profile }) {
 
             <div className="bg-white dark:bg-[#1E1E1E] rounded-2xl border border-[#E8ECF0] dark:border-[#2D2D2D] p-5">
               <h3 className="text-sm font-black text-surface-500 dark:text-white mb-4">Member Contributions</h3>
-              {memberData.length > 0 ? (
-                <div className="space-y-3">
-                  <ResponsiveContainer width="100%" height={180}>
-                    <BarChart data={memberData} layout="vertical" margin={{ left: 0, right: 0 }}>
-                      <XAxis type="number" hide />
-                      <YAxis type="category" dataKey="name" tick={{ fontSize: 10, fontWeight: 700 }} tickLine={false} axisLine={false} width={80} />
-                      <Tooltip
-                        contentStyle={{ borderRadius: 12, border: '1px solid #E8ECF0', fontSize: 12, fontWeight: 700 }}
-                        formatter={v => [`${displayCurrency}${v}`, 'Paid']}
-                      />
-                      <Bar dataKey="amount" radius={[0, 8, 8, 0]} fill="#16B843">
-                        {memberData.map((_, i) => <Cell key={i} fill={CHART_COLORS[i % CHART_COLORS.length]} />)}
-                      </Bar>
-                    </BarChart>
-                  </ResponsiveContainer>
-                  <div className="flex flex-wrap gap-2 pt-1">
-                    {memberData.slice(0, 5).map(m => {
-                      const pct = stats.totalSpending ? ((m.amount / stats.totalSpending) * 100).toFixed(1) : 0
-                      return (
-                        <div key={m.name} className="flex items-center gap-1.5 text-[10px] font-bold text-surface-400 bg-surface-50 dark:bg-[#2D2D2D] px-2 py-1 rounded-lg">
-                          <span>{getCategoryEmoji(m.name)}</span>
-                          <span>{m.name} — {pct}%</span>
+              {memberData.length > 0 && stats.totalSpending > 0 ? (
+                <div className="space-y-4">
+                  {memberData.map((m, i) => {
+                    const pct = (m.amount / stats.totalSpending) * 100
+                    const maxAmount = memberData[0].amount
+                    const barPct = maxAmount ? (m.amount / maxAmount) * 100 : 0
+                    const initials = m.name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase()
+                    const memberColors = ['bg-[#16B843]', 'bg-emerald-500', 'bg-teal-500', 'bg-sky-500', 'bg-indigo-500', 'bg-purple-500', 'bg-pink-500', 'bg-amber-500']
+                    return (
+                      <div key={m.name}>
+                        <div className="flex items-center gap-3 mb-1.5">
+                          <div className={`w-8 h-8 rounded-xl ${memberColors[i % memberColors.length]} flex items-center justify-center text-white text-[10px] font-black shrink-0 shadow-sm`}>
+                            {initials}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex justify-between items-center">
+                              <span className="text-xs font-bold text-surface-500 dark:text-white truncate">{m.name}</span>
+                              <div className="flex items-center gap-2 shrink-0 ml-2">
+                                <span className="text-xs font-black text-surface-500 dark:text-white tabular-nums">{displayCurrency}{m.amount.toFixed(2)}</span>
+                                <span className="text-[9px] font-black text-surface-300 tabular-nums w-10 text-right">{pct.toFixed(1)}%</span>
+                              </div>
+                            </div>
+                          </div>
                         </div>
-                      )
-                    })}
-                  </div>
+                        <div className="h-2 bg-surface-50 dark:bg-[#2D2D2D] rounded-full overflow-hidden ml-11">
+                          <div
+                            className={`h-full rounded-full transition-all duration-700 ease-out ${memberColors[i % memberColors.length]}`}
+                            style={{ width: `${barPct}%` }}
+                          />
+                        </div>
+                      </div>
+                    )
+                  })}
                 </div>
               ) : (
                 <div className="h-52 flex items-center justify-center text-sm font-bold text-surface-300">No member data</div>
