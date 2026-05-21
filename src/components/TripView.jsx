@@ -3,6 +3,7 @@ import { supabase } from '../supabaseClient'
 import ExpenseForm from './ExpenseForm'
 import AddMemberModal from './AddMemberModal'
 import ExpenseMenu from './ui/ExpenseMenu'
+import TripMenu from './ui/TripMenu'
 import ConfirmationModal from './ConfirmationModal'
 import { useCurrencyRates } from '../hooks/useCurrencyRates'
 
@@ -291,9 +292,9 @@ export default function TripView({ tripId, user, currency, activeTab, setActiveT
         <div className="h-1 w-full bg-gradient-to-r from-[#16B843] via-emerald-400 to-[#16B843]" />
 
         <div className="p-5 sm:p-6 space-y-5">
-          <div className="flex justify-between items-start gap-4">
-            <div className="flex items-center gap-3 min-w-0">
-              <div className="w-12 h-12 rounded-xl bg-white dark:bg-[#1E1E1E] flex items-center justify-center text-2xl shadow-sm border border-[#E8ECF0] dark:border-[#2D2D2D] shrink-0">
+            <div className="flex justify-between items-start gap-4">
+              <div className="flex items-center gap-3 min-w-0">
+              <div className="w-12 h-12 rounded-2xl bg-[#DAF7E2] text-[#16B843] dark:bg-green-950/40 dark:text-brand-400 flex items-center justify-center text-2xl shrink-0">
                 {trip?.emoji || '✈️'}
               </div>
               <div className="min-w-0 space-y-1">
@@ -312,15 +313,20 @@ export default function TripView({ tripId, user, currency, activeTab, setActiveT
               </div>
             </div>
 
-            {baseCurrency !== currency && !ratesLoading && (
-              <span className="shrink-0 text-[10px] bg-white dark:bg-[#1E1E1E] text-surface-500 dark:text-white px-3 py-1.5 rounded-full font-black border border-[#E8ECF0] dark:border-[#2D2D2D] shadow-sm flex items-center gap-1">
-                {baseCurrency}
-                <svg className="w-3 h-3 text-[#16B843]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" />
-                </svg>
-                {currency}
-              </span>
-            )}
+            <div className="flex items-center gap-2 shrink-0">
+              {isOwner && (
+                <TripMenu onDeleteTrip={() => setShowDeleteTrip(true)} />
+              )}
+              {baseCurrency !== currency && !ratesLoading && (
+                <span className="shrink-0 text-[10px] bg-white dark:bg-[#1E1E1E] text-surface-500 dark:text-white px-3 py-1.5 rounded-full font-black border border-[#E8ECF0] dark:border-[#2D2D2D] shadow-sm flex items-center gap-1">
+                  {baseCurrency}
+                  <svg className="w-3 h-3 text-[#16B843]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                  </svg>
+                  {currency}
+                </span>
+              )}
+            </div>
           </div>
 
           <div className="flex flex-col sm:flex-row sm:items-end gap-4 sm:gap-6">
@@ -380,16 +386,7 @@ export default function TripView({ tripId, user, currency, activeTab, setActiveT
               {isActive ? '✓ Close Trip' : '↺ Reopen'}
             </button>
           )}
-          {isOwner && activeTab === 'settle' && (
-            <button onClick={() => setShowDeleteTrip(true)}
-              className="btn-ghost !p-2 border border-red-200 dark:border-red-900/40 bg-red-50 dark:bg-red-950/20 text-[#F63332] hover:bg-red-100 dark:hover:bg-[#2D2D2D] rounded-xl"
-              title="Delete Trip"
-            >
-              <svg className="w-4.5 h-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9-5.25h-12M4.5 5.25h15" />
-              </svg>
-            </button>
-          )}
+
           {activeTab === 'expenses' && isActive && (
             <button onClick={() => { setEditingExpense(null); setShowForm(true) }} className="btn-primary !py-2 text-xs">
               + Log Cost

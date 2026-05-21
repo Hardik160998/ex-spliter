@@ -11,12 +11,12 @@ const SORT_OPTIONS = [
   { value: 'spending-asc', label: 'Lowest Spend' },
 ]
 
-const TRIP_GRADIENTS = [
-  'from-brand-500 to-emerald-600',
-  'from-neutral-800 to-neutral-900 dark:from-neutral-700 dark:to-neutral-900',
-  'from-emerald-500 to-teal-600',
-  'from-[#16B843] to-green-700',
-  'from-teal-500 to-cyan-600',
+const TRIP_ICON_STYLES = [
+  'bg-[#DAF7E2] text-[#16B843] dark:bg-green-950/40 dark:text-brand-400',
+  'bg-emerald-100 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-400',
+  'bg-teal-100 text-teal-700 dark:bg-teal-950/40 dark:text-teal-400',
+  'bg-sky-100 text-sky-700 dark:bg-sky-950/40 dark:text-sky-400',
+  'bg-brand-100 text-brand-700 dark:bg-green-950/40 dark:text-brand-400',
 ]
 
 function getTripEmoji(name = '') {
@@ -273,7 +273,7 @@ export default function TripList({ user, currency, onSelectTrip, onOpenSettings,
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-5">
           {sorted.map((trip, idx) => {
-            const gradient = TRIP_GRADIENTS[idx % TRIP_GRADIENTS.length]
+            const iconStyle = TRIP_ICON_STYLES[idx % TRIP_ICON_STYLES.length]
             const isOwner = trip.owner_id === user.id
             const tripTotal = convert(
               trip.expenses?.reduce((sum, e) => sum + Number(e.amount), 0) || 0,
@@ -291,7 +291,7 @@ export default function TripList({ user, currency, onSelectTrip, onOpenSettings,
                 <div className="p-5">
                   <div className="flex justify-between items-start mb-3">
                     <div className="flex items-center gap-3 min-w-0 pr-2">
-                      <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${gradient} flex items-center justify-center text-white text-xl shadow-md group-hover:scale-105 transition-transform duration-200 shrink-0`}>
+                      <div className={`w-12 h-12 rounded-2xl flex items-center justify-center text-xl shrink-0 ${iconStyle}`}>
                         {getTripEmoji(trip.name)}
                       </div>
                       <div className="min-w-0">

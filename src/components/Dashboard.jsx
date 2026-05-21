@@ -229,12 +229,12 @@ export default function Dashboard({ user, currency, searchQuery, onSelectTrip, o
     currency
   ), 0)
 
-  const TRIP_GRADIENTS = [
-    'from-brand-500 to-emerald-600',
-    'from-neutral-800 to-neutral-900 dark:from-neutral-700 dark:to-neutral-900',
-    'from-emerald-500 to-teal-600',
-    'from-[#16B843] to-green-700',
-    'from-teal-500 to-cyan-600'
+  const TRIP_ICON_STYLES = [
+    'bg-[#DAF7E2] text-[#16B843] dark:bg-green-950/40 dark:text-brand-400',
+    'bg-emerald-100 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-400',
+    'bg-teal-100 text-teal-700 dark:bg-teal-950/40 dark:text-teal-400',
+    'bg-sky-100 text-sky-700 dark:bg-sky-950/40 dark:text-sky-400',
+    'bg-brand-100 text-brand-700 dark:bg-green-950/40 dark:text-brand-400',
   ]
 
   // Calendar helpers removed — decorative only, no product value
@@ -528,7 +528,7 @@ export default function Dashboard({ user, currency, searchQuery, onSelectTrip, o
             </div>
           ) : (
             searched.map((trip, idx) => {
-              const gradient = TRIP_GRADIENTS[idx % TRIP_GRADIENTS.length]
+              const iconStyle = TRIP_ICON_STYLES[idx % TRIP_ICON_STYLES.length]
               const isOwner = trip.owner_id === user.id
               const tripTotal = trip.expenses?.reduce((sum, e) => sum + Number(e.amount), 0) || 0
 
@@ -538,11 +538,11 @@ export default function Dashboard({ user, currency, searchQuery, onSelectTrip, o
                   onClick={() => onSelectTrip(trip.id)}
                   className="w-full text-left bg-white dark:bg-[#1E1E1E] rounded-2xl overflow-hidden group active:scale-[0.99] p-0 border border-[#E8ECF0] dark:border-[#2D2D2D] hover:shadow-sm transition-all"
                 >
-                  <div className={`bg-gradient-to-r ${gradient} h-1.5 w-full`} />
+                  <div className="h-1.5 w-full bg-gradient-to-r from-[#16B843] via-emerald-400 to-[#16B843]" />
                   <div className="p-5">
                     <div className="flex justify-between items-start">
                       <div className="flex items-center gap-3.5">
-                        <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${gradient} flex items-center justify-center text-white text-xl shadow-lg shadow-black/10 group-hover:scale-105 transition-transform duration-200`}>
+                        <div className={`w-12 h-12 rounded-2xl flex items-center justify-center text-xl shrink-0 ${iconStyle}`}>
                           {getTripEmoji(trip.name)}
                         </div>
                         <div>
