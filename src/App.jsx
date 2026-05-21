@@ -5,6 +5,7 @@ import Dashboard from './components/Dashboard'
 import TripList from './components/TripList'
 import TripView from './components/TripView'
 import SettingsScreen from './components/SettingsScreen'
+import AnalyticsScreen from './components/AnalyticsScreen'
 
 const SETTINGS_RETURN_KEY = 'tripsplit_settings_return'
 
@@ -12,6 +13,7 @@ function getRoute() {
   let path = window.location.pathname
   if (path.length > 1 && path.endsWith('/')) path = path.slice(0, -1)
   if (path === '/settings') return { page: 'settings' }
+  if (path === '/analytics' || path === '/analytics/') return { page: 'analytics' }
   if (path === '/trips' || path === '/trips/') return { page: 'trips' }
   if (path === '/overview' || path === '/overview/') return { page: 'dashboard' }
   const match = path.match(/^\/trip\/([a-f0-9-]+)$/)
@@ -49,7 +51,12 @@ function AppLayout({
       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5">
         <path strokeLinecap="round" strokeLinejoin="round" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
       </svg>
-    ), active: route.page === 'trips', onClick: () => goTo('/trips') }
+    ), active: route.page === 'trips', onClick: () => goTo('/trips') },
+    { id: 'analytics', label: 'Analytics', icon: (
+      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5">
+        <path strokeLinecap="round" strokeLinejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z" />
+      </svg>
+    ), active: route.page === 'analytics', onClick: () => goTo('/analytics') }
   ]
 
   // Add Settings item
@@ -63,6 +70,7 @@ function AppLayout({
   // Title of current section
   let pageTitle = 'Overview'
   if (route.page === 'settings') pageTitle = 'Settings'
+  else if (route.page === 'analytics') pageTitle = 'Analytics'
   else if (route.page === 'trips') pageTitle = 'Trip Directory'
   else if (route.page === 'trip' && activeTrip) pageTitle = activeTrip.name
 
@@ -379,6 +387,16 @@ function AppLayout({
                   onClick: () => goTo('/trips')
                 },
                 {
+                  id: 'analytics', label: 'Analytics',
+                  icon: (
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.2">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z" />
+                    </svg>
+                  ),
+                  active: route.page === 'analytics',
+                  onClick: () => goTo('/analytics')
+                },
+                {
                   id: 'settings', label: 'Settings',
                   icon: (
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.2">
@@ -617,6 +635,14 @@ export default function App() {
         onBack={closeSettings}
         onSignOut={handleSignOut}
         onProfileUpdated={() => fetchProfile(session.user.id)}
+      />
+    )
+  } else if (route.page === 'analytics') {
+    content = (
+      <AnalyticsScreen
+        user={session.user}
+        currency={currency}
+        profile={profile}
       />
     )
   } else if (route.page === 'trips') {
