@@ -1,4 +1,4 @@
-﻿import { useState, useEffect } from 'react'
+﻿import { useState, useEffect, useRef } from 'react'
 import { supabase } from '../supabaseClient'
 import ExpenseForm from './ExpenseForm'
 import AddMemberModal from './AddMemberModal'
@@ -6,6 +6,10 @@ import ExpenseMenu from './ui/ExpenseMenu'
 import TripMenu from './ui/TripMenu'
 import ConfirmationModal from './ConfirmationModal'
 import { useCurrencyRates } from '../hooks/useCurrencyRates'
+import { jsPDF } from 'jspdf'
+import { applyPlugin } from 'jspdf-autotable'
+applyPlugin(jsPDF)
+import * as XLSX from 'xlsx'
 
 function getCategoryEmoji(cat = '') {
   const map = {   
@@ -190,6 +194,8 @@ export default function TripView({ tripId, user, currency, activeTab, setActiveT
   const [deletingExpense, setDeletingExpense] = useState(null)
   const [showDeleteTrip, setShowDeleteTrip] = useState(false)
   const [deleteLoading, setDeleteLoading] = useState(false)
+  const [showExport, setShowExport] = useState(false)
+  const exportRef = useRef(null)
 
   const fetchAll = async () => {
     try {
@@ -216,11 +222,172 @@ export default function TripView({ tripId, user, currency, activeTab, setActiveT
     fetchAll()
   }, [tripId])
 
+  useEffect(() => {
+    const handleClick = (e) => {
+      if (exportRef.current && !exportRef.current.contains(e.target)) setShowExport(false)
+    }
+    document.addEventListener('mousedown', handleClick)
+    return () => document.removeEventListener('mousedown', handleClick)
+  }, [])
+
   const baseCurrency = trip?.base_currency || '₹'
   const { convert, loading: ratesLoading } = useCurrencyRates()
   const fmt = (n) => `${currency}${convert(n, baseCurrency, currency).toFixed(2)}`
 
   const total = expenses.reduce((s, e) => s + Number(e.amount), 0)
+
+  const getPayerName = (memberId) => {
+    const m = members.find(mem => mem.id === memberId)
+    if (!m) return 'Unknown'
+    return m.user_id === user.id ? 'You' : m.display_name
+  }
+
+  const formatDate = (iso) =>
+    new Date(iso).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })
+
+  const CURRENCY_LABELS = {
+    '₹': 'INR', '$': 'USD', '€': 'EUR', '£': 'GBP',
+    '¥': 'JPY', 'A$': 'AUD', 'C$': 'CAD', 'S$': 'SGD',
+  }
+  const curLabel = CURRENCY_LABELS[currency] || currency
+
+  const getAmount = (e) => convert(Number(e.amount), baseCurrency, currency).toFixed(2)
+
+  const getName = (id) => {
+    const m = members.find(mem => mem.id === id)
+    if (!m) return 'Unknown'
+    return m.user_id === user.id ? 'You' : m.display_name
+  }
+
+  const exportPDF = () => {
+    if (!expenses.length) return
+    const doc = new jsPDF()
+    const perPerson = members.length > 0 ? total / members.length : 0
+    let y = 20
+    doc.setFontSize(16)
+    doc.text(trip?.name || 'Trip', 14, y)
+    y += 8
+    doc.setFontSize(10)
+    doc.text(`Generated on ${new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}`, 14, y)
+    y += 8
+    doc.setFontSize(10)
+    doc.text(`Total Spent: ${curLabel} ${convert(total, baseCurrency, currency).toFixed(2)}     Crew: ${members.length}     Per Person: ${curLabel} ${convert(perPerson, baseCurrency, currency).toFixed(2)}`, 14, y)
+    y += 8
+    const rows = expenses.map(e => [
+      formatDate(e.created_at),
+      e.category || 'Other',
+      getAmount(e),
+      e.description,
+      getPayerName(e.member_id),
+    ])
+    doc.autoTable({
+      startY: y,
+      head: [['Date', 'Category', `Amount (${curLabel})`, 'Description', 'Paid By']],
+      body: rows,
+      styles: { fontSize: 8, cellPadding: 2 },
+      headStyles: { fillColor: [22, 184, 67], textColor: [255, 255, 255], fontSize: 8, fontStyle: 'bold' },
+      alternateRowStyles: { fillColor: [245, 245, 245] },
+    })
+    y = doc.lastAutoTable.finalY + 10
+    doc.setFontSize(12)
+    doc.text('Billing Breakdown', 14, y)
+    y += 4
+    const billRows = members.map(m => {
+      const paid = expenses.filter(e => e.member_id === m.id).reduce((s, e) => s + Number(e.amount), 0)
+      const diff = Math.round((paid - perPerson) * 100) / 100
+      return [
+        getName(m.id),
+        `${curLabel} ${convert(paid, baseCurrency, currency).toFixed(2)}`,
+        diff >= 0 ? `+${curLabel} ${convert(diff, baseCurrency, currency).toFixed(2)}` : `-${curLabel} ${convert(Math.abs(diff), baseCurrency, currency).toFixed(2)}`,
+      ]
+    })
+    doc.autoTable({
+      startY: y,
+      head: [['Member', 'Paid', 'Difference']],
+      body: billRows,
+      styles: { fontSize: 8, cellPadding: 2 },
+      headStyles: { fillColor: [22, 184, 67], textColor: [255, 255, 255], fontSize: 8, fontStyle: 'bold' },
+      alternateRowStyles: { fillColor: [245, 245, 245] },
+    })
+    if (settlements.length > 0) {
+      y = doc.lastAutoTable.finalY + 10
+      doc.setFontSize(12)
+      doc.text('Active Transfers', 14, y)
+      y += 4
+      const settleRows = settlements.map(s => [
+        getName(s.from),
+        getName(s.to),
+        `${curLabel} ${s.amount.toFixed(2)}`,
+      ])
+      doc.autoTable({
+        startY: y,
+        head: [['From', 'To', `Amount (${curLabel})`]],
+        body: settleRows,
+        styles: { fontSize: 8, cellPadding: 2 },
+        headStyles: { fillColor: [22, 184, 67], textColor: [255, 255, 255], fontSize: 8, fontStyle: 'bold' },
+        alternateRowStyles: { fillColor: [245, 245, 245] },
+      })
+    }
+    doc.save(`${trip?.name || 'trip'}_expenses.pdf`)
+    setShowExport(false)
+  }
+
+  const exportExcel = () => {
+    if (!expenses.length) return
+    const perPerson = members.length > 0 ? total / members.length : 0
+    const data = []
+    data.push({ 'Trip Name': trip?.name || '', Date: '', Category: 'SUMMARY', Amount: '' })
+    data.push({ 'Trip Name': 'Total Spent', Date: '', Category: '', Amount: Number(convert(total, baseCurrency, currency).toFixed(2)), Currency: curLabel })
+    data.push({ 'Trip Name': 'Crew Count', Date: '', Category: '', Amount: members.length })
+    data.push({ 'Trip Name': 'Per Person', Date: '', Category: '', Amount: Number(convert(perPerson, baseCurrency, currency).toFixed(2)), Currency: curLabel })
+    data.push({ 'Trip Name': '', Date: '', Category: '', Amount: '' })
+    expenses.forEach(e => {
+      data.push({
+        'Trip Name': '',
+        Date: formatDate(e.created_at),
+        Category: e.category || 'Other',
+        Amount: Number(getAmount(e)),
+        Currency: curLabel,
+        Description: e.description,
+        'Paid By': getPayerName(e.member_id),
+      })
+    })
+    data.push({ 'Trip Name': '', Date: '', Category: '', Amount: '' })
+    data.push({ 'Trip Name': '', Date: '', Category: 'BILLING BREAKDOWN', Amount: '' })
+    members.forEach(m => {
+      const paid = expenses.filter(e => e.member_id === m.id).reduce((s, e) => s + Number(e.amount), 0)
+      const diff = Math.round((paid - perPerson) * 100) / 100
+      data.push({
+        'Trip Name': getName(m.id),
+        Date: 'Paid',
+        Category: '',
+        Amount: Number(convert(paid, baseCurrency, currency).toFixed(2)),
+        Currency: curLabel,
+        Description: diff >= 0 ? `+${curLabel} ${convert(diff, baseCurrency, currency).toFixed(2)}` : `-${curLabel} ${convert(Math.abs(diff), baseCurrency, currency).toFixed(2)}`,
+        'Paid By': '',
+      })
+    })
+    if (settlements.length > 0) {
+      data.push({ 'Trip Name': '', Date: '', Category: '', Amount: '' })
+      data.push({ 'Trip Name': '', Date: '', Category: 'ACTIVE TRANSFERS', Amount: '' })
+      settlements.forEach(s => {
+        data.push({
+          'Trip Name': '',
+          Date: '',
+          Category: 'Settlement',
+          Amount: Number(s.amount.toFixed(2)),
+          Currency: curLabel,
+          Description: `${getName(s.from)} → ${getName(s.to)}`,
+          'Paid By': '',
+        })
+      })
+    }
+    const ws = XLSX.utils.json_to_sheet(data)
+    const wb = XLSX.utils.book_new()
+    XLSX.utils.book_append_sheet(wb, ws, 'Expenses')
+    XLSX.writeFile(wb, `${trip?.name || 'trip'}_expenses.xlsx`)
+    setShowExport(false)
+  }
   
   // Calculate category totals
   const byCategory = expenses.reduce((acc, e) => {
@@ -391,6 +558,35 @@ export default function TripView({ tripId, user, currency, activeTab, setActiveT
             <button onClick={() => { setEditingExpense(null); setShowForm(true) }} className="btn-primary !py-2 text-xs">
               + Log Cost
             </button>
+          )}
+          {activeTab === 'expenses' && expenses.length > 0 && (
+            <div className="relative" ref={exportRef}>
+              <button onClick={() => setShowExport(!showExport)}
+                className="btn-secondary !py-2 text-xs flex items-center gap-1.5">
+                <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
+                </svg>
+                Export
+              </button>
+              {showExport && (
+                <div className="absolute right-0 top-full mt-1 z-40 bg-white dark:bg-[#1E1E1E] rounded-2xl border border-[#E8ECF0] dark:border-[#2D2D2D] shadow-xl py-1 min-w-[140px] overflow-hidden">
+                  <button onClick={exportPDF}
+                    className="w-full flex items-center gap-2.5 px-4 py-2.5 text-xs font-bold text-surface-500 dark:text-white hover:bg-[#F9F9F9] dark:hover:bg-[#2D2D2D] transition-colors">
+                    <svg className="w-4 h-4 text-[#F63332]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                    </svg>
+                    Export PDF
+                  </button>
+                  <button onClick={exportExcel}
+                    className="w-full flex items-center gap-2.5 px-4 py-2.5 text-xs font-bold text-surface-500 dark:text-white hover:bg-[#F9F9F9] dark:hover:bg-[#2D2D2D] transition-colors">
+                    <svg className="w-4 h-4 text-[#16B843]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                    Export Excel
+                  </button>
+                </div>
+              )}
+            </div>
           )}
         </div>
       </div>
